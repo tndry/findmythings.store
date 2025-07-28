@@ -1,0 +1,56 @@
+.page-login {
+  background-color: #f3f8fc;
+  background-image: url("/images/panel/login-bg.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.page-login .container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.page-login .locale-wrap {
+  position: absolute;
+  top: 30px;
+  right: 10px;
+}
+.page-login .locale-wrap .locale {
+  cursor: pointer;
+  padding-bottom: 10px;
+}
+.page-login .locale-wrap .locale:hover .dropdown-menu {
+  display: block;
+  position: absolute;
+  inset: -2px 0px auto auto;
+  margin: 0px;
+  transform: translate3d(0px, 30px, 0px);
+}
+.page-login .login-wrap {
+  width: 100%;
+}
+.page-login .login-content {
+  max-width: 550px;
+  margin: auto;
+  box-shadow: 4px 7px 20px rgba(3, 49, 133, 0.17);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 30px 20px;
+}
+.page-login .login-content .card-header {
+  border: none;
+  padding-bottom: 0;
+}
+.page-login .login-content .card-body {
+  padding: 30px 30px 0;
+}
+@media (max-width: 768px) {
+  .page-login .login-content .card-body {
+    padding: 15px 0 0;
+  }
+}
+.page-login .login-content .form-floating label {
+  font-size: 1rem;
+}/*# sourceMappingURL=login.css.map */

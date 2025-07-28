@@ -1,0 +1,27 @@
+.sorter-component .sorter-label {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+.sorter-component .sorter-field {
+  width: 130px;
+}
+.sorter-component .sorter-direction {
+  width: 100px;
+}
+@media (max-width: 767.98px) {
+  .sorter-component .sorter-label {
+    font-size: 0.8rem !important;
+  }
+  .sorter-component .sorter-field {
+    width: 120px !important;
+  }
+  .sorter-component .sorter-direction {
+    width: 80px !important;
+  }
+}/*# sourceMappingURL=sorter.css.map */

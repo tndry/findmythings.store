@@ -1,0 +1,33 @@
+.sidebar .accordion-button {
+  border: none;
+  background: transparent;
+  padding: 0.75rem 1rem;
+}
+.sidebar .accordion-button:not(.collapsed) {
+  background: rgba(var(--bs-primary-rgb), 0.05);
+  color: var(--bs-primary);
+}
+.sidebar .accordion-item {
+  border: none;
+  background: transparent;
+}
+.sidebar .nav-link {
+  padding: 0.5rem 1rem 0.5rem 3rem;
+  color: var(--bs-gray-700);
+}
+.sidebar .nav-link:hover {
+  color: var(--bs-primary);
+  background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+.sidebar .nav-link.active {
+  color: var(--bs-primary);
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+.sidebar .icon {
+  display: inline-block;
+  width: 1.5rem;
+}
+.sidebar .dropdown-divider {
+  border-top: 1px solid rgba(108, 117, 125, 0.15);
+  margin: 0;
+}/*# sourceMappingURL=sidebar.css.map */

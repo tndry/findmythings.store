@@ -1,0 +1,29 @@
+body.page-addresses .address-card {
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+body.page-addresses .address-card .address-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #e9ecef;
+}
+body.page-addresses .address-card .address-card-header .address-card-title {
+  margin: 0;
+}
+body.page-addresses .address-card .address-card-header .address-card-actions {
+  display: flex;
+  align-items: center;
+}
+body.page-addresses .address-card .address-card-header .address-card-actions a {
+  margin-left: 10px;
+}
+body.page-addresses .address-card .address-card-body {
+  padding: 15px;
+  word-break: break-all;
+}
+body.page-addresses .address-card .address-card-body p {
+  margin: 0;
+}/*# sourceMappingURL=page-addresses.css.map */

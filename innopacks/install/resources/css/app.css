@@ -1,0 +1,128 @@
+@charset "UTF-8";
+@font-face {
+  font-display: block;
+  font-family: "bootstrap-icons";
+  src: url("/vendor/bootstrap-icons/bootstrap-icons.woff2?08efbba7c53d8c5413793eecb19b20bb") format("woff2"), url("/vendor/bootstrap-icons/bootstrap-icons.woff?08efbba7c53d8c5413793eecb19b20bb") format("woff");
+}
+.btn-primary {
+  color: #fff !important;
+}
+
+body {
+  background-color: #f6f6f6;
+  height: 100vh;
+  background-image: url("/images/panel/login-bg.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+body header {
+  margin: 30px 0 10px;
+}
+body header .logo {
+  width: 200px;
+}
+body pre {
+  white-space: pre-wrap; /* 换行 */
+  word-wrap: break-word; /* 防止长单词溢出 */
+}
+body .install-box .progress-wrap {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  width: 700px;
+  display: flex;
+  margin-bottom: 20px;
+}
+body .install-box .progress-wrap li {
+  width: 25%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  font-size: 15px;
+}
+body .install-box .progress-wrap li::after {
+  content: "";
+  position: absolute;
+  top: 22px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #e0e0e0;
+  z-index: -1;
+}
+body .install-box .progress-wrap li:first-child::after {
+  width: 50%;
+  left: 50%;
+}
+body .install-box .progress-wrap li:last-child::after {
+  width: 50%;
+  right: 50%;
+}
+body .install-box .progress-wrap li .icon {
+  width: 40px;
+  height: 40px;
+  background-color: #fff;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  display: flex;
+  justify-content: center;
+  border-radius: 50%;
+  align-items: center;
+  margin-bottom: 6px;
+}
+body .install-box .progress-wrap li.active .icon {
+  background-color: #E91E63;
+  border-color: #E91E63;
+  color: #fff;
+}
+body .install-box .progress-wrap li.active::after {
+  background-color: #E91E63;
+}
+body .install-box .progress-wrap li.complete .icon span {
+  display: none;
+}
+body .install-box .progress-wrap li.complete .icon::before {
+  content: "\f272";
+  font-family: "bootstrap-icons";
+  font-size: 20px;
+}
+body .install-box .install-wrap {
+  background-color: #fff;
+  width: 800px;
+  min-height: 500px;
+  margin: 0 auto;
+  border-radius: 6px;
+  padding: 26px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+body .install-box .install-wrap .install-item .head-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+body .install-box .install-wrap .install-item .head-title .driver {
+  font-size: 14px;
+  font-weight: normal;
+}
+body .install-box .install-wrap .install-item .install-content {
+  font-size: 14px;
+  line-height: 1.8;
+  height: 420px;
+  border: 1px solid #e0e0e0;
+  padding: 14px;
+  border-radius: 4px;
+  overflow-y: auto;
+}
+body .install-box .install-wrap .install-success .icon {
+  width: 300px;
+  margin: 0 auto;
+}
+body .install-box .install-wrap .install-success .success-text {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 16px;
+}/*# sourceMappingURL=app.css.map */

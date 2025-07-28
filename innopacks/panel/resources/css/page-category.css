@@ -1,0 +1,41 @@
+body.page-category #categories-top .accordion-button.no-children:after {
+  display: none;
+}
+body.page-category #categories-top .accordion-header {
+  padding-right: 10px;
+}
+body.page-category #categories-top .accordion-header:hover {
+  background-color: #eee;
+}
+body.page-category #categories-top .accordion-button {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 0;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  padding-left: 30px;
+  background-color: transparent;
+  box-shadow: none;
+}
+body.page-category #categories-top .accordion-button:after {
+  position: absolute;
+  left: 10px;
+  --bs-accordion-btn-icon-width: .7rem;
+  transform: rotate(-90deg);
+}
+body.page-category #categories-top .accordion-button[aria-expanded=true]:after {
+  transform: rotate(0);
+}
+body.page-category #categories-top .accordion-body {
+  padding: 0;
+}
+body.page-category #categories-top .accordion-body .accordion-header {
+  padding-left: 18px;
+}
+body.page-category #categories-top .accordion-body .accordion-item {
+  border: none;
+}
+body.page-category #categories-top .accordion-body .accordion-item .accordion-button {
+  padding-right: 0;
+}/*# sourceMappingURL=page-category.css.map */
