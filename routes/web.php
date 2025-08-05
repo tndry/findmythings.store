@@ -1,16 +1,17 @@
 <?php
-/**
- * Copyright (c) Since 2024 InnoShop - All Rights Reserved
- *
- * @link       https://www.innoshop.com
- * @author     InnoShop <team@innoshop.com>
- * @license    https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
- */
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SubmissionController;
 
-Route::middleware(['front', 'customer_auth:customer', 'verified'])->group(function () {
-    Route::get('/titip-jual', [\App\Http\Controllers\SubmissionController::class, 'create'])->name('submission.create');
-    Route::post('/titip-jual', [\App\Http\Controllers\SubmissionController::class, 'store'])->name('submission.store');
-});
+// Mendaftarkan rute untuk otentikasi (login, register) & verifikasi email
+Auth::routes(['verify' => true]);
+
+// Grup rute untuk fitur 'Titip Jual' yang hanya bisa diakses
+// oleh customer yang sudah login dan terverifikasi emailnya.
+Route::middleware(['front', 'customer_auth:customer', 'verified'])
+    ->controller(SubmissionController::class)
+    ->group(function () {
+        Route::get('/titip-jual', 'create')->name('submission.create');
+        Route::post('/titip-jual', 'store')->name('submission.store');
+    });
