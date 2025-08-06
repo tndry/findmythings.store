@@ -48,7 +48,7 @@
 
                         <div class="main-product-img position-relative">
                             @hookinsert('front.product.show.image.before')
-                            <img src="{{ asset($product->image) }}" class="img-fluid">
+                            <img src="{{ Storage::url($product->image) }}" class="img-fluid">
                         </div>
                     </div>
                 </div>
