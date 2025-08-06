@@ -1,17 +1,5 @@
 @extends('layouts.app')
-@section                                                @php
-                                                    // Handle different image format types
-                                                    if (is_array($image)) {
-                                                        $imageUrl = $image['url'] ?? $image['value'] ?? '';
-                                                    } else {
-                                                        $imageUrl = $image;
-                                                    }
-                                                    
-                                                    // Ensure valid image URL or fallback
-                                                    if (!is_string($imageUrl) || empty($imageUrl)) {
-                                                        $imageUrl = 'images/placeholder.png';
-                                                    }
-                                                @endphp, 'page-product')
+@section('body-class', 'page-product')
 
 @section('title', \InnoShop\Common\Libraries\MetaInfo::getInstance($product)->getTitle())
 @section('description', \InnoShop\Common\Libraries\MetaInfo::getInstance($product)->getDescription())
