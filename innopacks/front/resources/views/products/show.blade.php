@@ -50,15 +50,12 @@
                             @hookinsert('front.product.show.image.before')
 
                             @php
-                                // Decode JSON dari kolom 'images' dan ambil gambar pertama
-                                $productImages = json_decode($product->images);
-                                $firstImage = $productImages[0] ?? null;
+                                $firstImage = $product->images[0] ?? null;
                             @endphp
 
                             @if($firstImage)
                                 <img src="{{ Storage::url($firstImage) }}" class="img-fluid">
                             @else
-                                {{-- Ganti path/to/placeholder.jpg dengan gambar placeholder Anda --}}
                                 <img src="/images/placeholder.jpg" class="img-fluid" alt="Gambar tidak tersedia">
                             @endif
                         </div>
