@@ -1,5 +1,17 @@
 @extends('layouts.app')
-@section('body-class', 'page-product')
+@section                                                @php
+                                                    // Handle different image format types
+                                                    if (is_array($image)) {
+                                                        $imageUrl = $image['url'] ?? $image['value'] ?? '';
+                                                    } else {
+                                                        $imageUrl = $image;
+                                                    }
+                                                    
+                                                    // Ensure valid image URL or fallback
+                                                    if (!is_string($imageUrl) || empty($imageUrl)) {
+                                                        $imageUrl = 'images/placeholder.png';
+                                                    }
+                                                @endphp, 'page-product')
 
 @section('title', \InnoShop\Common\Libraries\MetaInfo::getInstance($product)->getTitle())
 @section('description', \InnoShop\Common\Libraries\MetaInfo::getInstance($product)->getDescription())
@@ -66,7 +78,7 @@
 
                             @php
                                 $firstImage = $product->images[0] ?? null;
-                                // Debug: pastikan format gambar utama juga konsisten
+                                // Handle main image format consistency
                                 if ($firstImage) {
                                     if (is_array($firstImage)) {
                                         $mainImageUrl = $firstImage['url'] ?? $firstImage['value'] ?? '';
@@ -74,7 +86,7 @@
                                         $mainImageUrl = $firstImage;
                                     }
                                     
-                                    // Pastikan adalah string yang valid
+                                    // Ensure valid string or fallback
                                     if (!is_string($mainImageUrl) || empty($mainImageUrl)) {
                                         $mainImageUrl = 'images/placeholder.png';
                                     }

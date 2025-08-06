@@ -273,7 +273,7 @@ class Product extends BaseModel
     }
 
     /**
-     * Get images attribute - since we're using array casting, this ensures proper format
+     * Get images attribute - ensures proper format for image display
      * @return array
      */
     public function getImagesAttribute(): array

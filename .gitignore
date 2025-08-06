@@ -2,6 +2,10 @@
 /node_modules
 /storage/*.key
 /storage/installed
+/storage/logs/*.log
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
 /vendor
 /.fleet
 /.idea
@@ -9,6 +13,7 @@
 .env
 .env.backup
 .env.production
+.env.local
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -17,3 +22,14 @@ package-lock.json
 npm-debug.log
 yarn-error.log
 webpack.mix.js
+
+# Debug files
+debug_product.php
+
+# Cache directories
+/bootstrap/cache/*.php
+/storage/debugbar/*
+
+# Uploaded files (optional - jika tidak ingin gambar upload ter-push)
+/public/storage/submissions/*
+/public/storage/catalog/*

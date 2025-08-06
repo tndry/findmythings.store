@@ -22,7 +22,6 @@ class SubmissionController extends Controller
 {
     $paginator = \InnoShop\Common\Repositories\CategoryRepo::getInstance()->list(['active' => true]);
     $categories = $paginator->items();
-    // dd($categories);
     
 
     return view('submission.create', [

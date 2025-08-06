@@ -28,7 +28,39 @@ Banyak mahasiswa, terutama yang akan lulus atau pindah kos, memiliki barang-bara
 * **Framework:** Laravel 11 (berbasis [Innoshop Open Source](https://github.com/innocommerce/innoshop))
 * **Bahasa:** PHP, JavaScript
 * **Database:** MySQL
-* **Server Lokal:** Laragon
+* **Frontend:** Blade Templates, Bootstrap, Swiper.js
+* **Server:** Bitnami (Production), Laragon (Development)
+
+## Quick Start
+
+### Development Setup
+```bash
+# Clone repository
+git clone https://github.com/yourusername/findmythings.git
+cd findmythings
+
+# Copy environment file
+cp .env.example .env
+
+# Install dependencies
+composer install
+
+# Generate application key
+php artisan key:generate
+
+# Configure your .env file with database and email settings
+# Then run migrations
+php artisan migrate
+```
+
+### Production Deployment
+Lihat [DEPLOYMENT.md](DEPLOYMENT.md) untuk panduan lengkap deployment ke server production.
+
+## Deployment Status
+- ✅ Local Development Ready
+- ✅ Image Processing Fixed
+- ✅ Production Security Configured
+- ✅ Ready for GitHub & Azure Bitnami Deployment
 
 
 
