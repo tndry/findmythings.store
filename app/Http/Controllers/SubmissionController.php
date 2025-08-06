@@ -32,7 +32,10 @@ class SubmissionController extends Controller
     /**
      * Menyimpan data dari formulir.
      * (Logika ini akan kita isi nanti)
+     * 
+     * 
      */
+// Versi final dan sudah benar
 public function store(Request $request)
 {
     // 1. Validasi Data
