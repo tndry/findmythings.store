@@ -13,6 +13,14 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
+    ->withProviders([
+        InnoShop\Common\CommonServiceProvider::class,
+        InnoShop\Front\FrontServiceProvider::class,
+        InnoShop\Panel\PanelServiceProvider::class,
+        InnoShop\RestAPI\RestAPIServiceProvider::class,
+        InnoShop\Plugin\PluginServiceProvider::class,
+        InnoShop\Install\InstallServiceProvider::class,
+    ])
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
