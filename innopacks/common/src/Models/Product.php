@@ -42,8 +42,8 @@ class Product extends BaseModel
     ];
 
     protected $casts = [
-        'variables'  => 'array',
         'images'     => 'array',
+        'variables'  => 'array',
         'active'     => 'boolean',
         'is_virtual' => 'boolean',
     ];
@@ -242,14 +242,80 @@ class Product extends BaseModel
     public function getImageAttribute(): string
     {
         $images = $this->images ?? [];
+        
+        // Jika images adalah string JSON, decode terlebih dahulu
+        if (is_string($images)) {
+            $images = json_decode($images, true) ?? [];
+        }
+
+        // Jika tidak ada gambar sama sekali
+        if (empty($images)) {
+            return '';
+        }
 
         // Jika gambar pertama adalah array dengan key 'url', ambil nilainya
         if (isset($images[0]) && is_array($images[0]) && isset($images[0]['url'])) {
             return $images[0]['url'];
         }
 
-        // Jika tidak, gunakan logika lama
-        return $images[0] ?? '';
+        // Jika gambar pertama adalah array dengan key 'value', ambil nilainya  
+        if (isset($images[0]) && is_array($images[0]) && isset($images[0]['value'])) {
+            return $images[0]['value'];
+        }
+
+        // Jika gambar pertama adalah string (format lama), gunakan langsung
+        if (isset($images[0]) && is_string($images[0])) {
+            return $images[0];
+        }
+
+        // Fallback jika format tidak dikenali
+        return '';
+    }
+
+    /**
+     * Get images attribute - since we're using array casting, this ensures proper format
+     * @return array
+     */
+    public function getImagesAttribute(): array
+    {
+        $images = $this->attributes['images'] ?? null;
+        
+        // If images is null or empty string, return empty array
+        if (empty($images)) {
+            return [];
+        }
+        
+        // If it's already cast as array by Laravel
+        if (is_array($images)) {
+            $result = [];
+            foreach ($images as $image) {
+                if (is_array($image)) {
+                    // Extract URL from array format like {"url": "...", "value": "..."}
+                    $result[] = $image['url'] ?? $image['value'] ?? '';
+                } else if (is_string($image)) {
+                    $result[] = $image;
+                }
+            }
+            return array_filter($result); // Remove empty values
+        }
+        
+        // If it's still a JSON string (shouldn't happen with casting but just in case)
+        if (is_string($images)) {
+            $decoded = json_decode($images, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $result = [];
+                foreach ($decoded as $image) {
+                    if (is_array($image)) {
+                        $result[] = $image['url'] ?? $image['value'] ?? '';
+                    } else if (is_string($image)) {
+                        $result[] = $image;
+                    }
+                }
+                return array_filter($result);
+            }
+        }
+
+        return [];
     }
 
     /**

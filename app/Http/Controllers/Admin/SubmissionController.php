@@ -72,18 +72,22 @@ class SubmissionController extends Controller
                     );
 
                     $uploadResult = $uploadService->uploadForPanel($uploadedFile, 'products');
-                    $uploadedImageValues[] = $uploadResult['value'];
+                    // FIX: Simpan dalam format yang konsisten dengan Product model
+                    $uploadedImageValues[] = [
+                        'url' => $uploadResult['url'],
+                        'value' => $uploadResult['value']
+                    ];
 
                     Storage::disk('public')->delete($imagePath);
+                }
             }
-        }
 
             // 2. Buat produk di tabel utama
                 $product = Product::create([
                     'submission_id' => $submission->id,
                     'type'      => 'normal',
                     'brand_id'  => 5, // Pastikan ID ini ada di tabel inno_brands
-                    // Ubah 'images' menjadi $uploadedImageValues yang didapat dari UploadService
+                    // FIX: Simpan images dalam format yang konsisten dengan Product model accessor
                     'images'    => $uploadedImageValues,
                     'active'    => 1,
                     'price'     => 0,

@@ -29,10 +29,25 @@
                                 <div class="swiper" id="sub-product-img-swiper">
                                     <div class="swiper-wrapper">
                                         @foreach($product->images as $image)
-                                            <div class="swiper-slide">
-                                                <a href="{{ image_resize($image, 600, 600) }}" 
+                                            <div class="swiper-slide" style="height: 120px;">
+                                                @php
+                                                    // Debug: pastikan $image adalah string
+                                                    if (is_array($image)) {
+                                                        $imageUrl = $image['url'] ?? $image['value'] ?? '';
+                                                    } else {
+                                                        $imageUrl = $image;
+                                                    }
+                                                    
+                                                    // Pastikan $imageUrl adalah string yang valid
+                                                    if (!is_string($imageUrl) || empty($imageUrl)) {
+                                                        $imageUrl = 'images/placeholder.png'; // fallback image
+                                                    }
+                                                @endphp
+                                                <a href="{{ image_resize($imageUrl, 800, 800) }}" 
                                                    data-pswp-height="800">
-                                                    <img src="{{ image_resize($image) }}" class="img-fluid">
+                                                    <img src="{{ image_resize($imageUrl, 150, 150) }}" 
+                                                         class="img-fluid" 
+                                                         style="width: 100%; height: 100px; object-fit: cover; border-radius: 8px;">
                                                 </a>
                                             </div>
                                         @endforeach
@@ -51,12 +66,32 @@
 
                             @php
                                 $firstImage = $product->images[0] ?? null;
+                                // Debug: pastikan format gambar utama juga konsisten
+                                if ($firstImage) {
+                                    if (is_array($firstImage)) {
+                                        $mainImageUrl = $firstImage['url'] ?? $firstImage['value'] ?? '';
+                                    } else {
+                                        $mainImageUrl = $firstImage;
+                                    }
+                                    
+                                    // Pastikan adalah string yang valid
+                                    if (!is_string($mainImageUrl) || empty($mainImageUrl)) {
+                                        $mainImageUrl = 'images/placeholder.png';
+                                    }
+                                } else {
+                                    $mainImageUrl = 'images/placeholder.png';
+                                }
                             @endphp
 
                             @if($firstImage)
-                                <img src="{{ Storage::url($firstImage) }}" class="img-fluid">
+                                <img src="{{ image_resize($mainImageUrl, 800, 800) }}" 
+                                     class="img-fluid" 
+                                     style="width: 100%; max-height: 500px; object-fit: contain; border-radius: 12px;">
                             @else
-                                <img src="/images/placeholder.jpg" class="img-fluid" alt="Gambar tidak tersedia">
+                                <img src="{{ asset('images/placeholder.png') }}" 
+                                     class="img-fluid" 
+                                     style="width: 100%; max-height: 500px; object-fit: contain; border-radius: 12px;" 
+                                     alt="Gambar tidak tersedia">
                             @endif
                         </div>
                         @hookinsert('front.product.show.image.after')
