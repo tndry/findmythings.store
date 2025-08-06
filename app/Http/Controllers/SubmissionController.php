@@ -41,6 +41,7 @@ public function store(Request $request)
         'description' => 'required|string',
         'category_id' => 'required|integer',
         'price' => 'required|numeric|min:0',
+        'submitter_whatsapp' => 'required|string|max:20', // <-- PERBAIKAN: Menambahkan validasi WA
         'images' => 'required|array|max:3',
         'images.*' => 'image|mimes:jpeg,png,jpg|max:4096', // 4MB per foto
     ]);
@@ -51,30 +52,30 @@ public function store(Request $request)
 
     $customer = auth('customer')->user();
     if (!$customer) {
-        // Jika karena suatu hal user tidak login, jangan lanjutkan
         return redirect()->route('login.index')->with('error', 'Anda harus login untuk menitipkan barang.');
     }
+    
     $imagePaths = [];
 
     // 2. Proses Upload Foto
     if ($request->hasFile('images')) {
         foreach ($request->file('images') as $file) {
+            // Menyimpan file ke storage/app/public/submissions dan mendapatkan path-nya
             $path = $file->store('submissions', 'public');
             $imagePaths[] = $path;
         }
     }
 
-    // 3. Simpan ke Database (tapi belum ada Modelnya)
-    
-    Submission::create([
-        'user_id'               => $customer->id,
-        'submitter_whatsapp'    => $request->input('submitter_whatsapp'), // Kita perlu tambahkan input ini
-        'product_name'          => $request->input('product_name'),
-        'description'           => $request->input('description'),
-        'price'                 => $request->input('price'),
-        'category_id'           => $request->input('category_id'),
-        'images'                => json_encode($imagePaths),
-        'status'                => 'pending',
+    // 3. Simpan ke Database
+    \App\Models\Submission::create([
+        'user_id'              => $customer->id,
+        'submitter_whatsapp'   => $request->input('submitter_whatsapp'),
+        'product_name'         => $request->input('product_name'),
+        'description'          => $request->input('description'),
+        'price'                => $request->input('price'),
+        'category_id'          => $request->input('category_id'),
+        'images'               => json_encode($imagePaths), // Menyimpan path gambar sebagai JSON
+        'status'               => 'pending',
     ]);
 
     return redirect()->back()->with('success', 'Barang Anda telah berhasil dikirim dan akan direview oleh Admin!');
