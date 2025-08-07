@@ -60,7 +60,7 @@ class TestGoogleOAuth extends Command
         $this->info('4. Testing Google OAuth routes...');
         try {
             $redirectRoute = route('google.redirect');
-            $callbackRoute = route('google.callback');
+            $callbackRoute = route('social.callback');
             $this->info('   Redirect route: ' . $redirectRoute);
             $this->info('   Callback route: ' . $callbackRoute);
         } catch (\Exception $e) {

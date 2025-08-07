@@ -5,9 +5,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\GoogleLoginController;
 
-// Google OAuth routes
+// Google OAuth routes mengikuti standar InnoShop
 Route::get('/auth/google', [GoogleLoginController::class, 'redirect'])->name('google.redirect');
-Route::get('/auth/google/callback', [GoogleLoginController::class, 'callback'])->name('google.callback');
+Route::get('/social/google/callback', [GoogleLoginController::class, 'callback'])->name('social.callback');
 
 // Mendaftarkan rute untuk otentikasi (login, register) & verifikasi email
 Auth::routes(['verify' => true]);
