@@ -14,6 +14,8 @@ use Illuminate\Support\Collection;
 
 class BaseModel extends Model
 {
+    protected $connection = 'mysql';
+
     /**
      * Build a tree from a flat collection.
      *

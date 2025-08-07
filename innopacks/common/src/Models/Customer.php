@@ -41,7 +41,7 @@ class Customer extends AuthUser implements MustVerifyEmail
 
     protected $fillable = [
         'email', 'password', 'name', 'avatar', 'customer_group_id', 'address_id', 'locale', 'active', 'code', 'from',
-        'deleted_at',
+        'deleted_at', 'google_id', 'email_verified_at', 'remember_token',
     ];
 
     /**

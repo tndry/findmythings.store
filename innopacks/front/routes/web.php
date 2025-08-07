@@ -110,7 +110,7 @@ Route::post('/forgotten/password', [Account\ForgottenController::class, 'changeP
 
 Route::prefix('account')
     ->name('account.')
-    ->middleware('customer_auth:customer', 'verified')
+    ->middleware('customer_auth:customer')
     ->group(function () {
         Route::get('/', [Account\AccountController::class, 'index'])->name('index');
 
