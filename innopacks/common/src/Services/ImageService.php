@@ -43,8 +43,13 @@ class ImageService
         // Check if file exists in public path first
         if (! is_file($this->imagePath)) {
             // For catalog images, check storage path
-            if (str_starts_with($this->image, 'catalog/')) {
-                $storagePath = storage_path('app/public/' . $this->image);
+            if (str_starts_with($this->image, 'catalog/') || str_starts_with($this->image, 'storage/catalog/')) {
+                // Handle both formats: catalog/products/file.jpg and storage/catalog/products/file.jpg
+                $relativePath = str_starts_with($this->image, 'storage/') 
+                    ? substr($this->image, 8) // Remove 'storage/' prefix
+                    : $this->image;
+                    
+                $storagePath = storage_path('app/public/' . $relativePath);
                 if (is_file($storagePath)) {
                     $this->imagePath = $storagePath;
                     // Keep the image path as is for storage URL generation
@@ -134,8 +139,15 @@ class ImageService
     public function originUrl(): string
     {
         // For catalog images that are stored in storage, use storage URL
-        if (str_starts_with($this->image, 'catalog/') && 
+        if ((str_starts_with($this->image, 'catalog/') || str_starts_with($this->image, 'storage/catalog/')) && 
             str_starts_with($this->imagePath, storage_path('app/public/'))) {
+            
+            // If image already starts with storage/, use as is
+            if (str_starts_with($this->image, 'storage/')) {
+                return asset($this->image);
+            }
+            
+            // Otherwise, add storage/ prefix
             return asset('storage/' . $this->image);
         }
         
