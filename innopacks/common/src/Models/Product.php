@@ -364,9 +364,17 @@ class Product extends BaseModel
     {
         $image = $this->image ?? ''; // Mengambil gambar pertama dari Accessor
 
-        
+            // Jika path-nya kosong, kembalikan URL ke gambar placeholder
+        if (empty($imagePath)) {
+            // Pastikan Anda punya gambar placeholder di public/images/placeholder.jpg
+            return asset('images/placeholder.jpg');
+        }
 
-        return image_resize($image, $with, $height);
+        // Buat URL yang benar dan bisa diakses publik menggunakan Storage::url()
+        // Ini adalah perbaikan utamanya
+        return Storage::url($imagePath);
+
+        // return image_resize($image, $with, $height);
     }
 
     public function submission()

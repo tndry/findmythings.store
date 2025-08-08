@@ -9,6 +9,7 @@
 
 namespace InnoShop\RestAPI\Services;
 
+use Illuminate\Support\Facades\Storage;
 use InnoShop\Common\Requests\UploadFileRequest;
 use InnoShop\Common\Requests\UploadImageRequest;
 use InnoShop\Common\Services\FileSecurityValidator;
@@ -30,18 +31,19 @@ class UploadService extends BaseService
         // Unified security validation - this is the single point of validation
         FileSecurityValidator::validateFile($file->getClientOriginalName());
 
-        $filePath = $file->store("/{$type}", $disk);
+        $filePath = $file->store($type, $disk);
         
         // For catalog disk, use storage URL instead of asset URL
         if ($disk === 'catalog') {
-            $realPath = "{$pathPrefix}/$filePath";
+            // Clean up the path - remove leading slash and fix double slashes
+            $cleanPath = ltrim($filePath, '/');
             return [
-                'url'   => asset("storage/{$realPath}"),
-                'value' => $realPath,
+                'url'   => Storage::disk('catalog')->url($filePath),
+                'value' => $cleanPath,
             ];
         }
         
-        $realPath = "{$pathPrefix}/$filePath";
+        $realPath = "{$pathPrefix}/{$filePath}";
 
         return [
             'url'   => asset($realPath),
