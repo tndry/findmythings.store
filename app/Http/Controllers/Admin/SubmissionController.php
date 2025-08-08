@@ -75,32 +75,36 @@ class SubmissionController extends Controller
                 $imagePath = $imagePathData; 
                 $originalFileName = basename($imagePath);
                 
+                \Log::info("Processing image for submission {$submission->id}: {$imagePath}");
+                
                 // Check if file exists before processing
                 if (!Storage::disk('public')->exists($imagePath)) {
                     \Log::warning("Image file not found for submission {$submission->id}: {$imagePath}");
                     continue; // Skip this image and continue with others
                 }
                 
-                $mimeType = mime_content_type(Storage::disk('public')->path($imagePath));
-                
-                $fullPathOnDisk = Storage::disk('public')->path($imagePath);
-                // Buat instance UploadedFile dari file yang sudah ada di storage sementara
-                $uploadedFile = new UploadedFile(
-                    $fullPathOnDisk,
-                    $originalFileName, // Nama file asli yang diunggah user
-                    $mimeType,
-                    0, 
-                    true // Ini adalah "test file", penting untuk Laravel
-                );
+                try {
+                    // PENDEKATAN LARAVEL: Gunakan Storage Facade untuk semua operasi file
+                    $newFileName = 'catalog/products/' . \Str::random(40) . '.' . pathinfo($originalFileName, PATHINFO_EXTENSION);
 
-                $uploadResult = $uploadService->uploadForPanel($uploadedFile, 'products');
-                // FIX: Simpan dalam format yang konsisten dengan Product model
-                $uploadedImageValues[] = [
-                    'url' => $uploadResult['url'],
-                    'value' => $uploadResult['value']
-                ];
-
-                Storage::disk('public')->delete($imagePath);
+                    // Salin file menggunakan Storage. Ini akan otomatis membuat direktori jika belum ada.
+                    if (Storage::disk('public')->copy($imagePath, $newFileName)) {
+                        \Log::info("Successfully copied {$imagePath} to {$newFileName}");
+                        
+                        // Simpan path baru yang relatif terhadap disk 'public'
+                        $uploadedImageValues[] = $newFileName;
+                        
+                        // Hapus file asli
+                        Storage::disk('public')->delete($imagePath);
+                        \Log::info("Deleted original file: {$imagePath}");
+                    } else {
+                        \Log::error("Failed to copy {$imagePath} to {$newFileName} using Storage facade.");
+                        continue;
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Error processing image {$imagePath}: " . $e->getMessage());
+                    continue;
+                }
             }
 
                 // 2. Buat produk di tabel utama
@@ -109,7 +113,7 @@ class SubmissionController extends Controller
                     'submission_id' => $submission->id,
                     'type'      => 'normal',
                     'brand_id'  => 5, // Pastikan ID ini ada di tabel inno_brands
-                    // FIX: Simpan images dalam format yang konsisten dengan Product model accessor
+                    // Use simple array format like local environment
                     'images'    => $uploadedImageValues,
                     'active'    => 1,
                     'price'     => 0,
