@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Exception;
+use Illuminate\Http\RedirectResponse;
+use InnoShop\Common\Repositories\Customer\SocialRepo;
+use App\Http\Controllers\Controller;
+use Laravel\Socialite\Facades\Socialite;
+
+class GoogleLoginController extends Controller
+{
+    public function redirect(): RedirectResponse
+    {
+        \Illuminate\Support\Facades\Config::set('services.google', [
+            'client_id' => env('GOOGLE_CLIENT_ID'),
+            'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+            'redirect' => url('/google-ipb/callback')
+        ]);
+        
+        $referer = request()->headers->get('referer');
+        $context = 'login';
+        
+        if ($referer && (str_contains($referer, '/register') || str_contains($referer, '/registrasi'))) {
+            $context = 'register';
+        }
+        
+        session(['google_oauth_context' => $context]);
+        
+        return Socialite::driver('google')
+            ->with(['hd' => 'apps.ipb.ac.id'])
+            ->redirect();
+    }
+
+    public function callback()
+    {
+        \Illuminate\Support\Facades\Config::set('services.google', [
+            'client_id' => env('GOOGLE_CLIENT_ID'),
+            'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+            'redirect' => url('/google-ipb/callback')
+        ]);
+        
+        $user = Socialite::driver('google')->user();
+        
+        if (!str_ends_with($user->getEmail(), '@apps.ipb.ac.id')) {
+            return redirect(front_route('login.index'))->withErrors([
+                'email' => 'Hanya email IPB yang diizinkan'
+            ]);
+        }
+
+        $context = session('google_oauth_context', 'login');
+        session()->forget('google_oauth_context');
+        
+        $existingCustomer = \InnoShop\Common\Models\Customer::where('email', $user->getEmail())->first();
+        
+        if ($context === 'register') {
+            if ($existingCustomer) {
+                return redirect(front_route('login.index'))->withErrors([
+                    'email' => 'Email sudah terdaftar'
+                ]);
+            }
+            
+            $customer = SocialRepo::getInstance()->createCustomer('google', [
+                'uid' => $user->getId(),
+                'email' => $user->getEmail(),
+                'name' => $user->getName(),
+                'avatar' => $user->getAvatar(),
+                'token' => $user->token,
+                'raw' => $user->getRaw()
+            ]);
+            
+            if (!$customer->hasVerifiedEmail()) {
+                $customer->email_verified_at = now();
+                $customer->save();
+            }
+            
+            auth('customer')->login($customer);
+            return redirect(front_route('account.index'))->with('success', 'Registrasi IPB berhasil!');
+        } else {
+            if (!$existingCustomer) {
+                return redirect(front_route('register.index'))->withErrors([
+                    'email' => 'Email belum terdaftar'
+                ]);
+            }
+            
+            auth('customer')->login($existingCustomer);
+            return redirect(front_route('account.index'))->with('success', 'Login IPB berhasil!');
+        }
+    }
+}

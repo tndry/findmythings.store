@@ -1,0 +1,1 @@
+      <div class=" mt-4 p-3 border rounded text-center\><a href=\/google-ipb/auth\ class=\btn btn-success w-100\> MASUK DENGAN AKUN IPB </a></div>
