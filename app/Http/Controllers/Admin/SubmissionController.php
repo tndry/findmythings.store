@@ -45,9 +45,25 @@ class SubmissionController extends Controller
 
     public function approve(Submission $submission)
     {
+        // PENCEGAHAN DUPLIKASI: Cek apakah submission sudah diapprove atau sudah ada produk
+        if ($submission->status === 'approved') {
+            return redirect()
+                ->route('panel.submissions.index')
+                ->withErrors(['error' => 'Submission ini sudah disetujui sebelumnya.']);
+        }
+
+        // Cek apakah sudah ada produk yang dibuat untuk submission ini
+        $existingProduct = Product::where('submission_id', $submission->id)->first();
+        if ($existingProduct) {
+            return redirect()
+                ->route('panel.submissions.index')
+                ->withErrors(['error' => 'Produk untuk submission ini sudah pernah dibuat (ID: ' . $existingProduct->id . ').']);
+        }
+
         DB::beginTransaction();
 
         try {
+            \Log::info("Starting approval process for submission {$submission->id}");
 
             $uploadedImageValues = [];
 
@@ -58,31 +74,37 @@ class SubmissionController extends Controller
             foreach ($submissionImages as $imagePathData) {
                 $imagePath = $imagePathData; 
                 $originalFileName = basename($imagePath);
+                
+                // Check if file exists before processing
+                if (!Storage::disk('public')->exists($imagePath)) {
+                    \Log::warning("Image file not found for submission {$submission->id}: {$imagePath}");
+                    continue; // Skip this image and continue with others
+                }
+                
                 $mimeType = mime_content_type(Storage::disk('public')->path($imagePath));
                 
-                if (Storage::disk('public')->exists($imagePath)) {
-                    $fullPathOnDisk = Storage::disk('public')->path($imagePath);
-                    // Buat instance UploadedFile dari file yang sudah ada di storage sementara
-                    $uploadedFile = new UploadedFile(
-                        $fullPathOnDisk,
-                        $originalFileName, // Nama file asli yang diunggah user
-                        $mimeType,
-                        0, 
-                        true // Ini adalah "test file", penting untuk Laravel
-                    );
+                $fullPathOnDisk = Storage::disk('public')->path($imagePath);
+                // Buat instance UploadedFile dari file yang sudah ada di storage sementara
+                $uploadedFile = new UploadedFile(
+                    $fullPathOnDisk,
+                    $originalFileName, // Nama file asli yang diunggah user
+                    $mimeType,
+                    0, 
+                    true // Ini adalah "test file", penting untuk Laravel
+                );
 
-                    $uploadResult = $uploadService->uploadForPanel($uploadedFile, 'products');
-                    // FIX: Simpan dalam format yang konsisten dengan Product model
-                    $uploadedImageValues[] = [
-                        'url' => $uploadResult['url'],
-                        'value' => $uploadResult['value']
-                    ];
+                $uploadResult = $uploadService->uploadForPanel($uploadedFile, 'products');
+                // FIX: Simpan dalam format yang konsisten dengan Product model
+                $uploadedImageValues[] = [
+                    'url' => $uploadResult['url'],
+                    'value' => $uploadResult['value']
+                ];
 
-                    Storage::disk('public')->delete($imagePath);
-                }
+                Storage::disk('public')->delete($imagePath);
             }
 
-            // 2. Buat produk di tabel utama
+                // 2. Buat produk di tabel utama
+                \Log::info("Creating product for submission {$submission->id}");
                 $product = Product::create([
                     'submission_id' => $submission->id,
                     'type'      => 'normal',
@@ -120,15 +142,20 @@ class SubmissionController extends Controller
                 ]);
 
                 // 6. Ubah status submission
+                \Log::info("Updating submission status to approved for submission {$submission->id}");
                 $submission->status = 'approved';
                 $submission->save();
 
+                \Log::info("Committing transaction for submission {$submission->id}");
                 DB::commit();
 
+                \Log::info("Approval process completed successfully for submission {$submission->id}");
                 return redirect()
                     ->route('panel.submissions.index')
                     ->with('success', 'Produk berhasil disetujui dan diterbitkan!');
             } catch (\Exception $e) {
+                \Log::error("Approval process failed for submission {$submission->id}: " . $e->getMessage());
+                \Log::error("Error location: " . $e->getFile() . ':' . $e->getLine());
                 DB::rollBack();
                 return redirect()
                     ->back()

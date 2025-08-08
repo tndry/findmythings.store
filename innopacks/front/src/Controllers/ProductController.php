@@ -51,8 +51,13 @@ class ProductController extends Controller
             abort(404);
         }
 
-        // Load relasi submission untuk tombol WhatsApp
-        $product->load('submission');
+        // Load relasi submission untuk tombol WhatsApp dengan error handling
+        try {
+            $product->load('submission');
+        } catch (\Exception $e) {
+            // Log error but continue without submission data
+            \Log::warning('Failed to load product submission: ' . $e->getMessage());
+        }
 
         $skuId = $request->get('sku_id');
 
@@ -67,7 +72,14 @@ class ProductController extends Controller
     public function slugShow(Request $request): mixed
     {
         $slug    = $request->slug;
-        $product = ProductRepo::getInstance()->withActive()->builder(['slug' => $slug])->with('submission')->firstOrFail();
+        
+        try {
+            $product = ProductRepo::getInstance()->withActive()->builder(['slug' => $slug])->with('submission')->firstOrFail();
+        } catch (\Exception $e) {
+            // Fallback: load product without submission if there's an error
+            \Log::warning('Failed to load product with submission: ' . $e->getMessage());
+            $product = ProductRepo::getInstance()->withActive()->builder(['slug' => $slug])->firstOrFail();
+        }
 
         $skuId = $request->get('sku_id');
 

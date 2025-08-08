@@ -80,7 +80,12 @@
                         </table>
                     @else
                         <div class="p-4 text-center">
-                            {{ front_trans('account.no_submissions_yet') }} <a href="{{ route('submission.create') }}">{{ front_trans('account.submit_now') }}</a>
+                            {{ front_trans('account.no_submissions_yet') }} 
+                            @if(auth('customer')->check())
+                                <a href="{{ route('submission.create') }}" class="btn btn-primary btn-sm">{{ front_trans('account.submit_now') }}</a>
+                            @else
+                                <a href="{{ front_route('login.index') }}" class="btn btn-primary btn-sm">Login untuk Mulai Jual</a>
+                            @endif
                         </div>
                     @endif
                 </div>
