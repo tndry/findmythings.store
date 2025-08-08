@@ -33,3 +33,6 @@ debug_product.php
 # Uploaded files (optional - jika tidak ingin gambar upload ter-push)
 /public/storage/submissions/*
 /public/storage/catalog/*
+
+/*.php
+public/*.php

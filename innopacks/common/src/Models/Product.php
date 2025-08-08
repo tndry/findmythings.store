@@ -10,6 +10,7 @@
 namespace InnoShop\Common\Models;
 
 use Exception;
+use Illuminate\Support\Facades\Storage;
 use InnoShop\Common\Traits\Replicate;
 use App\Models\Submission;
 use InnoShop\Common\Models\Order\Item;
@@ -253,23 +254,33 @@ class Product extends BaseModel
             return '';
         }
 
+        $imagePath = '';
+
         // Prioritaskan 'value' untuk image_resize(), fallback ke 'url'
         if (isset($images[0]) && is_array($images[0]) && isset($images[0]['value'])) {
-            return $images[0]['value'];
+            $imagePath = $images[0]['value'];
         }
-
         // Jika tidak ada 'value', gunakan 'url' sebagai fallback
-        if (isset($images[0]) && is_array($images[0]) && isset($images[0]['url'])) {
-            return $images[0]['url'];
+        else if (isset($images[0]) && is_array($images[0]) && isset($images[0]['url'])) {
+            $imagePath = $images[0]['url'];
         }
-
         // Jika gambar pertama adalah string (format lama), gunakan langsung
-        if (isset($images[0]) && is_string($images[0])) {
-            return $images[0];
+        else if (isset($images[0]) && is_string($images[0])) {
+            $imagePath = $images[0];
         }
 
-        // Fallback jika format tidak dikenali
-        return '';
+        // Jika path kosong, return empty string
+        if (empty($imagePath)) {
+            return '';
+        }
+
+        // Jika sudah berupa URL lengkap, return langsung
+        if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
+            return $imagePath;
+        }
+
+        // Convert relative path to full URL using image_resize
+        return image_resize($imagePath, 600, 600);
     }
 
     /**
@@ -289,14 +300,25 @@ class Product extends BaseModel
         if (is_array($images)) {
             $result = [];
             foreach ($images as $image) {
+                $imagePath = '';
                 if (is_array($image)) {
                     // Extract URL from array format like {"url": "...", "value": "..."}
-                    $result[] = $image['url'] ?? $image['value'] ?? '';
+                    $imagePath = $image['url'] ?? $image['value'] ?? '';
                 } else if (is_string($image)) {
-                    $result[] = $image;
+                    $imagePath = $image;
+                }
+                
+                if (!empty($imagePath)) {
+                    // If already a full URL, use it directly
+                    if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
+                        $result[] = $imagePath;
+                    } else {
+                        // Convert relative path to full URL
+                        $result[] = image_resize($imagePath, 600, 600);
+                    }
                 }
             }
-            return array_filter($result); // Remove empty values
+            return $result;
         }
         
         // If it's still a JSON string (shouldn't happen with casting but just in case)
@@ -305,13 +327,24 @@ class Product extends BaseModel
             if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
                 $result = [];
                 foreach ($decoded as $image) {
+                    $imagePath = '';
                     if (is_array($image)) {
-                        $result[] = $image['url'] ?? $image['value'] ?? '';
+                        $imagePath = $image['url'] ?? $image['value'] ?? '';
                     } else if (is_string($image)) {
-                        $result[] = $image;
+                        $imagePath = $image;
+                    }
+                    
+                    if (!empty($imagePath)) {
+                        // If already a full URL, use it directly
+                        if (filter_var($imagePath, FILTER_VALIDATE_URL)) {
+                            $result[] = $imagePath;
+                        } else {
+                            // Convert relative path to full URL
+                            $result[] = image_resize($imagePath, 600, 600);
+                        }
                     }
                 }
-                return array_filter($result);
+                return $result;
             }
         }
 
@@ -364,17 +397,19 @@ class Product extends BaseModel
     {
         $image = $this->image ?? ''; // Mengambil gambar pertama dari Accessor
 
-            // Jika path-nya kosong, kembalikan URL ke gambar placeholder
-        if (empty($imagePath)) {
+        // Jika path-nya kosong, kembalikan URL ke gambar placeholder
+        if (empty($image)) {
             // Pastikan Anda punya gambar placeholder di public/images/placeholder.jpg
             return asset('images/placeholder.jpg');
         }
 
-        // Buat URL yang benar dan bisa diakses publik menggunakan Storage::url()
-        // Ini adalah perbaikan utamanya
-        return Storage::url($imagePath);
+        // Jika image sudah berupa URL lengkap, return langsung
+        if (filter_var($image, FILTER_VALIDATE_URL)) {
+            return $image;
+        }
 
-        // return image_resize($image, $with, $height);
+        // Buat URL yang benar dan bisa diakses publik menggunakan image_resize
+        return image_resize($image, $with, $height);
     }
 
     public function submission()
