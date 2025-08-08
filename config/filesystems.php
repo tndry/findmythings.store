@@ -45,10 +45,10 @@ return [
         ],
         
         'catalog' => [
-            'driver' => 'local', // Menggunakan driver lokal karena Anda di Laragon
-            'root' => public_path('catalog'), // Ini akan menyimpan gambar di folder public/catalog
-            'url' => env('APP_URL').'/catalog', // URL untuk mengakses gambar
-            'visibility' => 'public', // Agar bisa diakses dari web
+            'driver' => 'local',
+            'root' => storage_path('app/public/catalog'), // Simpan di storage/app/public/catalog
+            'url' => env('APP_URL').'/storage/catalog', // URL menggunakan symbolic link storage
+            'visibility' => 'public',
             'throw' => false,
         ],
 

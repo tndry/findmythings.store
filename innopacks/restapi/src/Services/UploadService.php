@@ -31,6 +31,16 @@ class UploadService extends BaseService
         FileSecurityValidator::validateFile($file->getClientOriginalName());
 
         $filePath = $file->store("/{$type}", $disk);
+        
+        // For catalog disk, use storage URL instead of asset URL
+        if ($disk === 'catalog') {
+            $realPath = "{$pathPrefix}/$filePath";
+            return [
+                'url'   => asset("storage/{$realPath}"),
+                'value' => $realPath,
+            ];
+        }
+        
         $realPath = "{$pathPrefix}/$filePath";
 
         return [

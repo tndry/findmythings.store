@@ -361,11 +361,13 @@ class Product extends BaseModel
      * @throws Exception
      */
     public function getImageUrl(int $with = 600, int $height = 600): string
-{
-    $image = $this->image ?? ''; // Mengambil gambar pertama dari Accessor
+    {
+        $image = $this->image ?? ''; // Mengambil gambar pertama dari Accessor
 
-    return image_resize($image, $with, $height);
-}
+        
+
+        return image_resize($image, $with, $height);
+    }
 
     public function submission()
     {
