@@ -3,11 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SubmissionController;
-use App\Http\Controllers\GoogleLoginController;
+use App\Http\Controllers\GoogleAuthController;
 
-// Google OAuth routes mengikuti standar InnoShop
-Route::get('/auth/google', [GoogleLoginController::class, 'redirect'])->name('google.redirect');
-Route::get('/social/google/callback', [GoogleLoginController::class, 'callback'])->name('social.callback');
+// Google OAuth IPB routes - INDEPENDENT dari sistem InnoShop
+Route::get('/google-ipb/auth', [GoogleAuthController::class, 'redirect'])->name('google.ipb.redirect');
+Route::get('/google-ipb/callback', [GoogleAuthController::class, 'callback'])->name('google.ipb.callback');
 
 // Debug route untuk cek authentication status
 Route::get('/debug-auth', function() {

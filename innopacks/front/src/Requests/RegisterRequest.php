@@ -31,8 +31,8 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'    => 'required|unique:customers,email|ends_with:@apps.ipb.ac.id',
-            'password' => 'required|confirmed',
+            'email'    => 'required|email|unique:customers,email|ends_with:@apps.ipb.ac.id',
+            'password' => 'required|confirmed|min:6',
         ];
     }
 
@@ -44,6 +44,21 @@ class RegisterRequest extends FormRequest
         return [
             'email'    => front_trans('login.email'),
             'password' => front_trans('login.password'),
+        ];
+    }
+
+    /**
+     * Get custom error messages for validation rules.
+     *
+     * @return array
+     */
+    public function messages(): array
+    {
+        return [
+            'email.ends_with' => 'Email harus menggunakan domain IPB (@apps.ipb.ac.id). Contoh: nama@apps.ipb.ac.id',
+            'email.unique' => 'Email ini sudah terdaftar. Silakan gunakan email lain atau login jika Anda sudah memiliki akun.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok dengan password yang dimasukkan.',
+            'password.min' => 'Password minimal harus 6 karakter.',
         ];
     }
 }

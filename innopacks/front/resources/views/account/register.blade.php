@@ -23,8 +23,12 @@
       @hookinsert('account.register.email.after')
       <div class="form-group mb-4">
         <input id="password" type="password" class="form-control" name="password" required autocomplete="new-password" placeholder="{{ __('front/login.password') }}" />
-        <input class="d-none" name="password_confirmation" />
         <span class="invalid-feedback" role="alert"><strong>{{ __('front/login.password_required') }}</strong></span>
+      </div>
+
+      <div class="form-group mb-4">
+        <input id="password_confirmation" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password" placeholder="Konfirmasi Password" />
+        <span class="invalid-feedback" role="alert"><strong>Konfirmasi password diperlukan</strong></span>
       </div>
 
       <div class="btn-submit">
@@ -48,10 +52,8 @@
 
   inno.validateAndSubmitForm('.form-wrap', function(data) {
     layer.load(2, {shade: [0.3,'#fff'] })
-    const params = new URLSearchParams(data);
-    params.set('password_confirmation', $('input[name="password"]').val());
 
-    axios.post($('.form-wrap').attr('action'), params.toString()).then(function(res) {
+    axios.post($('.form-wrap').attr('action'), data).then(function(res) {
       if (res.success) {
         if (iframe) {
           setTimeout(() => {
