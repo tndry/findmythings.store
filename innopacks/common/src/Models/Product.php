@@ -253,14 +253,14 @@ class Product extends BaseModel
             return '';
         }
 
-        // Jika gambar pertama adalah array dengan key 'url', ambil nilainya
-        if (isset($images[0]) && is_array($images[0]) && isset($images[0]['url'])) {
-            return $images[0]['url'];
-        }
-
-        // Jika gambar pertama adalah array dengan key 'value', ambil nilainya  
+        // Prioritaskan 'value' untuk image_resize(), fallback ke 'url'
         if (isset($images[0]) && is_array($images[0]) && isset($images[0]['value'])) {
             return $images[0]['value'];
+        }
+
+        // Jika tidak ada 'value', gunakan 'url' sebagai fallback
+        if (isset($images[0]) && is_array($images[0]) && isset($images[0]['url'])) {
+            return $images[0]['url'];
         }
 
         // Jika gambar pertama adalah string (format lama), gunakan langsung
