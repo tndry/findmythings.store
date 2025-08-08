@@ -17,7 +17,15 @@ class TestGoogleOAuth extends Command
         // Test 1: Check if settings exist
         $this->info('1. Checking Google OAuth settings...');
         try {
-            $socialSettings = system_setting('social', []);
+            $socialSettingsRaw = system_setting('social', []);
+            
+            // Handle both array and JSON string formats
+            if (is_string($socialSettingsRaw)) {
+                $socialSettings = json_decode($socialSettingsRaw, true) ?: [];
+            } else {
+                $socialSettings = $socialSettingsRaw;
+            }
+            
             if (empty($socialSettings)) {
                 $this->error('   ERROR: No social settings found!');
             } else {
