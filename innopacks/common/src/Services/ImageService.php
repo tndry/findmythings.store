@@ -39,9 +39,23 @@ class ImageService
         }
         $this->image     = $image ?: $this->placeholderImage;
         $this->imagePath = public_path($this->image);
+        
+        // Check if file exists in public path first
         if (! is_file($this->imagePath)) {
-            $this->image     = $this->placeholderImage;
-            $this->imagePath = public_path($this->placeholderImage);
+            // For catalog images, check storage path
+            if (str_starts_with($this->image, 'catalog/')) {
+                $storagePath = storage_path('app/public/' . $this->image);
+                if (is_file($storagePath)) {
+                    $this->imagePath = $storagePath;
+                    // Keep the image path as is for storage URL generation
+                } else {
+                    $this->image     = $this->placeholderImage;
+                    $this->imagePath = public_path($this->placeholderImage);
+                }
+            } else {
+                $this->image     = $this->placeholderImage;
+                $this->imagePath = public_path($this->placeholderImage);
+            }
         }
     }
 
@@ -119,6 +133,12 @@ class ImageService
      */
     public function originUrl(): string
     {
+        // For catalog images that are stored in storage, use storage URL
+        if (str_starts_with($this->image, 'catalog/') && 
+            str_starts_with($this->imagePath, storage_path('app/public/'))) {
+            return asset('storage/' . $this->image);
+        }
+        
         return asset($this->image);
     }
 }
