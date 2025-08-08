@@ -8,6 +8,6 @@
  */
 
 return [
-    'description' => 'Toko ditutup sementara. Menunggu pemilik toko untuk melanjutkan operasi.',
-    'title'       => 'The shop sementara tidak dapat diakses',
+    'description' => 'findmythings tutup sementara. Menunggu admin untuk melanjutkan operasi.',
+    'title'       => 'findmythings sementara tidak dapat diakses',
 ];
