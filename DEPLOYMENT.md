@@ -9,7 +9,71 @@
 5. Run: `php artisan key:generate`
 6. Run: `php artisan migrate`
 
-## Production Deployment (Bitnami Azure)
+## Production Deployment (findmythings.store)
+
+### Google OAuth IPB Login System Update
+
+**Important**: This update adds Google OAuth login specifically for IPB students/staff (@apps.ipb.ac.id)
+
+### Pre-deployment Checklist
+- [x] Code tested locally
+- [x] Google OAuth credentials ready
+- [x] Server backup plan ready
+
+### Deployment Steps
+
+1. **Connect to server:**
+   ```bash
+   ssh tandry@findmythings.store
+   cd /path/to/your/laravel/app
+   ```
+
+2. **Backup current state:**
+   ```bash
+   cp .env .env.backup.$(date +%Y%m%d_%H%M%S)
+   ```
+
+3. **Pull latest changes:**
+   ```bash
+   git pull origin main
+   ```
+
+4. **Install dependencies:**
+   ```bash
+   composer install --no-dev --optimize-autoloader
+   ```
+
+5. **Update .env file for Google OAuth:**
+   ```bash
+   # Add these lines to your .env file:
+   GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID_HERE
+   GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET_HERE
+   GOOGLE_REDIRECT_URI=https://findmythings.store/google-ipb/callback
+   
+   # Ensure APP_URL is correct:
+   APP_URL=https://findmythings.store
+   ```
+   
+   **Note**: Replace the placeholder values with your actual Google OAuth credentials
+
+6. **Clear and optimize caches:**
+   ```bash
+   php artisan config:clear
+   php artisan route:clear
+   php artisan view:clear
+   php artisan cache:clear
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+   ```
+
+7. **Test deployment:**
+   ```bash
+   php artisan route:list --name=google.ipb
+   ```
+
+### Google Cloud Console Update
+Update redirect URI to: `https://findmythings.store/google-ipb/callback`
 
 ### First Time Setup
 
