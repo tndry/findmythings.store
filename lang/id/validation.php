@@ -120,7 +120,7 @@ return [
     'starts_with' => 'The :attribute must start with one of the following: :values.',
     'string'      => ':attribute mesti string.',
     'timezone'    => ':attribute mesti zon waktu yang sah.',
-    'unique'      => ':attribute telah wujud.',
+    'unique'      => ':attribute sudah digunakan.',
     'uploaded'    => ':attribute gagal diunggah.',
     'url'         => ':attribute format tidak sah.',
     'uuid'        => ':attribute mesti UUID yang sah.',
