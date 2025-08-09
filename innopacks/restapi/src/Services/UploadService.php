@@ -72,9 +72,9 @@ class UploadService extends BaseService
     public function images(UploadImageRequest $request): array
     {
         $image = $request->file('image');
-        $type  = $request->file('type', 'common');
+        
 
-        return $this->uploadFile($image, $type);
+        return $this->uploadFile($image, 'avatars');
     }
 
     /**
