@@ -243,9 +243,20 @@ class CustomerRepo extends BaseRepo
             'from'              => $requestData['from']              ?? 'pc_web',
         ];
 
-        $avatar = $requestData['avatar'] ?? '';
-        if ($avatar) {
-            $data['avatar'] = $avatar;
+        if (!empty($requestData['avatar']) && $requestData['avatar'] instanceof \Illuminate\Http\UploadedFile) {
+
+            // 1. Hapus avatar lama jika ada
+            // (Ini langkah opsional tapi bagus untuk kebersihan)
+            // if ($customer->avatar) {
+            //     \Storage::disk('public')->delete($customer->avatar);
+            // }
+
+            // 2. Simpan file baru ke folder 'avatars' di dalam 'storage/app/public'
+            //    dan dapatkan path-nya (misal: "avatars/randomname.jpg")
+            $path = $requestData['avatar']->store('avatars', 'public');
+
+            // 3. Simpan path (berupa teks) tersebut ke data yang akan masuk ke database
+            $data['avatar'] = $path;
         }
 
         $password = $requestData['password'] ?? '';
