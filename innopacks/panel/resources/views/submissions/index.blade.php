@@ -52,7 +52,7 @@
                         </td>   
                         <td>{{ $submission->created_at->format('d M Y') }}</td>
                         <td>
-                            <a href="{{ route('panel.submissions.show', $submission) }}" class="btn btn-sm btn-primary">Review</a>
+                            <a href="{{ panel_route('submissions.show', $submission) }}" class="btn btn-sm btn-primary">Review</a>
                         </td>
                     </tr>
                     @empty
