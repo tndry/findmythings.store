@@ -138,9 +138,19 @@ if (! function_exists('panel_route')) {
         try {
             return route($panelName.'.'.$name, $parameters, $absolute);
         } catch (\Exception $e) {
-            return route($panelName.'.dashboard.index');
+            // Log the error for debugging
+            if (function_exists('error_log')) {
+                error_log("Panel Route Error: Cannot generate route '{$panelName}.{$name}' - " . $e->getMessage());
+            }
+            
+            // Try fallback to dashboard
+            try {
+                return route($panelName.'.dashboard.index');
+            } catch (\Exception $fallbackException) {
+                // Last resort: return basic URL
+                return url($panelName);
+            }
         }
-
     }
 }
 
