@@ -21,4 +21,6 @@ return [
     'password'                  => 'Password',
     'password_required'         => 'Silakan Masukkan Password',
     'login_submit'              => 'Masuk',
+    'google_login_ipb'          => 'Masuk dengan Akun IPB',
+    'google_login_description'  => 'Menggunakan sistem akun IPB yang sudah ada',
 ];

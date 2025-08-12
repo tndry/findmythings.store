@@ -34,6 +34,7 @@ return [
     'name'              => 'Nama',
     'news'              => 'Berita',
     'no'                => 'Tidak',
+    'or'                => 'atau',
     'out_of_stock'      => 'Stok Habis',
     'page_total_show'   => 'Tampilkan :first sampai :last dari :total total',
     'pages'             => 'Halaman',
