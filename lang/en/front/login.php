@@ -21,4 +21,6 @@ return [
     'empty_customer'            => 'Empty account',
     'inactive_customer'         => 'Your account is inactive.',
     'login_success'             => 'Login successfully.',
+    'google_login_ipb'          => 'Sign in with IPB Account',
+    'google_login_description'  => 'Using your existing IPB account system',
 ];

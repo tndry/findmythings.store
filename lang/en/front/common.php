@@ -34,6 +34,7 @@ return [
     'name'              => 'Name',
     'news'              => 'News',
     'no'                => 'no',
+    'or'                => 'or',
     'out_of_stock'      => 'Out of Stock',
     'page_total_show'   => 'Showing :first to :last of :total items',
     'pages'             => 'Pages',

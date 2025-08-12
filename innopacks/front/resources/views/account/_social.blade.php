@@ -8,12 +8,12 @@
   <div class="google-auth-section mt-4">
     <div class="d-flex align-items-center mb-3">
       <hr class="flex-grow-1">
-      <span class="px-3 text-muted small">atau</span>
+      <span class="px-3 text-muted small">{{ __('front/common.or') }}</span>
       <hr class="flex-grow-1">
     </div>
     <div class="text-center">
       <a href="{{ route('google.ipb.redirect') }}"
-         class="btn btn-outline-secondary w-100 py-3 d-flex align-items-center justify-content-center position-relative google-btn">
+         class="btn btn-outline-secondary w-100 py-3 d-flex align-items-center justify-content-center google-btn">
 
         <!-- Google Icon SVG -->
         <svg class="me-3" width="20" height="20" viewBox="0 0 24 24">
@@ -23,34 +23,11 @@
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
         </svg>
 
-        <span class="fw-semibold">Masuk dengan Akun IPB</span>
-
-        <!-- Badge for special features -->
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary text-white small px-2 py-1" style="font-size: 0.7rem;">
-          TERCEPAT
-        </span>
+        <span class="fw-semibold">{{ __('front/login.google_login_ipb') }}</span>
       </a>
 
-      <!-- Benefits for Google OAuth -->
-      <div class="mt-3 text-center">
-        <div class="row text-muted small">
-          <div class="col-4">
-            <i class="bi bi-check-circle-fill text-success me-1"></i>
-            Auto verifikasi
-          </div>
-          <div class="col-4">
-            <i class="bi bi-lightning-fill text-warning me-1"></i>
-            Login cepat
-          </div>
-          <div class="col-4">
-            <i class="bi bi-shield-check text-primary me-1"></i>
-            Aman
-          </div>
-        </div>
-      </div>
-
       <div class="mt-2">
-        <small class="text-muted">Menggunakan sistem akun IPB yang sudah ada</small>
+        <small class="text-muted">{{ __('front/login.google_login_description') }}</small>
       </div>
     </div>
   </div>
