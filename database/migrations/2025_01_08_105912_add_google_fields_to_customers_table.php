@@ -17,7 +17,7 @@ return new class extends Migration
                 $table->string('google_id')->nullable()->after('email');
             }
             if (!Schema::hasColumn('customers', 'remember_token')) {
-                $table->rememberToken()->after('from');
+                $table->rememberToken();
             }
         });
     }

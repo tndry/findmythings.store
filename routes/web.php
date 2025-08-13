@@ -39,13 +39,18 @@ Route::get('/test-submission', function() {
 // Mendaftarkan rute untuk otentikasi (login, register) & verifikasi email
 Auth::routes(['verify' => true]);
 
-// Grup rute untuk fitur 'Titip Jual' - TEMPORARY: Removed verified middleware for debugging
-Route::middleware(['front', 'customer_auth:customer'])
-    ->controller(SubmissionController::class)
-    ->group(function () {
-        Route::get('/titip-jual', 'create')->name('submission.create');
-        Route::post('/titip-jual', 'store')->name('submission.store');
-    });
+// Grup rute untuk fitur 'Titip Jual' dengan locale support
+$locales = \InnoShop\Common\Repositories\LocaleRepo::getInstance()->all();
+foreach ($locales as $locale) {
+    Route::middleware(['front', 'customer_auth:customer'])
+        ->prefix($locale->code)
+        ->name($locale->code . '.front.')
+        ->controller(SubmissionController::class)
+        ->group(function () {
+            Route::get('/titip-jual', 'create')->name('submission.create');
+            Route::post('/titip-jual', 'store')->name('submission.store');
+        });
+}
 
 // DEBUGGING: Temporary route without middleware
 Route::get('/debug-titip-jual', [\App\Http\Controllers\SubmissionController::class, 'create'])->name('debug.submission.create');

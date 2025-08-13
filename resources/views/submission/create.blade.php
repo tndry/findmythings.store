@@ -1,5 +1,6 @@
-@extends('layouts.app') {{-- Sesuaikan dengan layout utama Anda --}}
+@extends('front::layouts.app')
 
+@section('body-class', 'page-submission-create')
 
 @section('content')
 <div class="container my-5">
@@ -10,12 +11,13 @@
         </div>
     @endif
     
-    <h2>{{ isset($submission) ? 'Perbaiki Detail Titipan' : 'Mulai Jual Barangmu' }}</h2>
-    <p>{{ isset($submission) ? 'Silakan perbarui informasi barang Anda sesuai catatan dari admin.' : 'Isi formulir di bawah ini untuk menitipkan barang bekasmu.' }}</p>
+    <h2>{{ isset($submission) ? __('front/submission.title_edit') : __('front/submission.title') }}</h2>
+    <p>{{ isset($submission) ? __('front/submission.description_edit') : __('front/submission.description') }}</p>
 
     {{-- Menentukan action dan method form secara dinamis --}}
     @php
-        $formAction = isset($submission) ? account_route('submissions.update', $submission) : route('submission.store');
+        $currentLocale = app()->getLocale();
+        $formAction = isset($submission) ? account_route('submissions.update', $submission) : route($currentLocale . '.front.submission.store');
         $formMethod = 'POST'; // Method form selalu POST
     @endphp
 
@@ -38,58 +40,58 @@
         @endif
 
         <div class="mb-3">
-            <label for="product_name" class="form-label">Nama Produk</label>
+            <label for="product_name" class="form-label">{{ __('front/submission.product_name') }}</label>
             {{-- Mengisi value dengan data lama jika ada --}}
             <input type="text" class="form-control" id="product_name" name="product_name" value="{{ old('product_name', $submission->product_name ?? '') }}" required>
         </div>
 
         <div class="mb-3">
-            <label for="category_id" class="form-label">Kategori</label>
+            <label for="category_id" class="form-label">{{ __('front/submission.category') }}</label>
             <select class="form-select" id="category_id" name="category_id" required>
-                <option value="" disabled {{ old('category_id', $submission->category_id ?? '') == '' ? 'selected' : '' }}>Pilih Kategori</option>
+                <option value="" disabled {{ old('category_id', $submission->category_id ?? '') == '' ? 'selected' : '' }}>{{ __('front/submission.select_category') }}</option>
                 @forelse($categories as $category)
                     <option value="{{ $category->id }}" {{ old('category_id', $submission->category_id ?? '') == $category->id ? 'selected' : '' }}>
                         {{-- PERBAIKAN: Gunakan fallbackName() untuk nama yang bisa diterjemahkan --}}
                         {{ $category->fallbackName() }}
                     </option>
                 @empty
-                    <option value="" disabled>Tidak ada kategori tersedia.</option>
+                    <option value="" disabled>{{ __('front/submission.no_categories') }}</option>
                 @endforelse
             </select>
         </div>
 
         <div class="mb-3">
-            <label for="price" class="form-label">Harga (Rp)</label>
+            <label for="price" class="form-label">{{ __('front/submission.price') }}</label>
             <input type="number" class="form-control" id="price" name="price" value="{{ old('price', $submission->price ?? '') }}" required>
         </div>
         
         <div class="mb-3">
-            <label for="submitter_whatsapp" class="form-label">Nomor WhatsApp</label>
-            <input type="text" class="form-control" id="submitter_whatsapp" name="submitter_whatsapp" value="{{ old('submitter_whatsapp', $submission->submitter_whatsapp ?? '') }}" required placeholder="Contoh: 08123456789">
+            <label for="submitter_whatsapp" class="form-label">{{ __('front/submission.whatsapp_number') }}</label>
+            <input type="text" class="form-control" id="submitter_whatsapp" name="submitter_whatsapp" value="{{ old('submitter_whatsapp', $submission->submitter_whatsapp ?? '') }}" required placeholder="{{ __('front/submission.whatsapp_placeholder') }}">
         </div>
 
         <div class="mb-3">
-            <label for="description" class="form-label">Deskripsi</label>
+            <label for="description" class="form-label">{{ __('front/submission.product_description') }}</label>
             <textarea class="form-control" id="description" name="description" rows="5" required>{{ old('description', $submission->description ?? '') }}</textarea>
         </div>
 
         <div class="mb-3">
-            <label for="images" class="form-label">Foto Produk (Maksimal 3 foto)</label>
+            <label for="images" class="form-label">{{ __('front/submission.product_photos') }}</label>
             <input class="form-control" type="file" id="images" name="images[]" multiple>
             @if(isset($submission) && $submission->images)
                 <div class="mt-2">
-                    <small>Foto saat ini:</small>
+                    <small>{{ __('front/submission.current_photos') }}</small>
                     <div class="d-flex">
                         @foreach(json_decode($submission->images) as $image)
                             <img src="{{ asset('storage/' . $image) }}" alt="Foto produk" class="img-thumbnail me-2" style="width: 100px; height: 100px; object-fit: cover;">
                         @endforeach
                     </div>
-                    <small class="text-muted">Mengupload foto baru akan menggantikan semua foto lama.</small>
+                    <small class="text-muted">{{ __('front/submission.photo_replace_note') }}</small>
                 </div>
             @endif
         </div>
 
-        <button type="submit" class="btn btn-primary">{{ isset($submission) ? 'Simpan Perubahan' : 'Kirim Titipan' }}</button>
+        <button type="submit" class="btn btn-primary">{{ isset($submission) ? __('front/submission.submit_button_edit') : __('front/submission.submit_button') }}</button>
     </form>
 </div>
 @endsection
