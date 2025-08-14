@@ -711,6 +711,30 @@ if (! function_exists('image_origin')) {
     }
 }
 
+if (! function_exists('submission_image_url')) {
+    /**
+     * Get submission image URL for display
+     * Handles both old and new compressed images
+     *
+     * @param string|null $imagePath
+     * @return string
+     */
+    function submission_image_url(?string $imagePath = ''): string
+    {
+        if (empty($imagePath)) {
+            return asset('images/placeholder.png');
+        }
+
+        // If it's already a full URL, return as is
+        if (str_starts_with($imagePath, 'http')) {
+            return $imagePath;
+        }
+
+        // For submission images stored in storage/app/public/submissions
+        return asset('storage/' . $imagePath);
+    }
+}
+
 if (! function_exists('sub_string')) {
     /**
      * @param  $string

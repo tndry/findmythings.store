@@ -88,8 +88,22 @@ class SubmissionController extends Controller
                 $file = $uploadedFiles[$i];
                 
                 if ($file->isValid() && $file->getSize() <= 4 * 1024 * 1024) {
-                    $path = $file->store('submissions', 'public');
-                    $imagePaths[] = $path;
+                    try {
+                        // Use ImageService to compress the uploaded image
+                        $compressedPath = \InnoShop\Common\Services\ImageService::compressUpload(
+                            $file->getRealPath(),
+                            'submissions',
+                            1200, // max width
+                            1200, // max height
+                            85    // quality (85% for good balance of quality/size)
+                        );
+                        $imagePaths[] = $compressedPath;
+                    } catch (\Exception $e) {
+                        // Fallback to regular upload if compression fails
+                        \Log::warning("Image compression failed, using regular upload: " . $e->getMessage());
+                        $path = $file->store('submissions', 'public');
+                        $imagePaths[] = $path;
+                    }
                 }
             }
         } else {
@@ -173,8 +187,22 @@ class SubmissionController extends Controller
                 $file = $uploadedFiles[$i];
                 
                 if ($file->isValid() && $file->getSize() <= 4 * 1024 * 1024) {
-                    $path = $file->store('submissions', 'public');
-                    $imagePaths[] = $path;
+                    try {
+                        // Use ImageService to compress the uploaded image
+                        $compressedPath = \InnoShop\Common\Services\ImageService::compressUpload(
+                            $file->getRealPath(),
+                            'submissions',
+                            1200, // max width
+                            1200, // max height
+                            85    // quality (85% for good balance of quality/size)
+                        );
+                        $imagePaths[] = $compressedPath;
+                    } catch (\Exception $e) {
+                        // Fallback to regular upload if compression fails
+                        \Log::warning("Image compression failed, using regular upload: " . $e->getMessage());
+                        $path = $file->store('submissions', 'public');
+                        $imagePaths[] = $path;
+                    }
                 }
             }
         }

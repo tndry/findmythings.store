@@ -22,8 +22,8 @@
                 <h5>Foto Produk:</h5>
                 @if($submission->images)
                     @foreach(json_decode($submission->images) as $image)
-                        <a href="{{ Storage::url($image) }}" target="_blank">
-                            <img src="{{ Storage::url($image) }}" class="img-fluid mb-2 border rounded" alt="Foto Produk">
+                        <a href="{{ submission_image_url($image) }}" target="_blank">
+                            <img src="{{ submission_image_url($image) }}" class="img-fluid mb-2 border rounded" alt="Foto Produk" style="max-width: 200px;">
                         </a>
                     @endforeach
                 @endif
