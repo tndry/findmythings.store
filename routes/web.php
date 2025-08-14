@@ -9,6 +9,8 @@ use App\Http\Controllers\GoogleAuthController;
 Route::get('/google-ipb/auth', [GoogleAuthController::class, 'redirect'])->name('google.ipb.redirect');
 Route::get('/google-ipb/callback', [GoogleAuthController::class, 'callback'])->name('google.ipb.callback');
 
+Route::get('/api/subcategories/{category}', [\App\Http\Controllers\SubmissionController::class, 'getSubcategories'])->name('api.subcategories');
+
 // Debug route untuk cek authentication status
 Route::get('/debug-auth', function() {
     $data = [

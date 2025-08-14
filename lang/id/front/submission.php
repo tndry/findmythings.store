@@ -25,6 +25,12 @@ return [
     'product_photos'      => 'Foto Produk (Maksimal 3 foto)',
     'current_photos'      => 'Foto saat ini:',
     'photo_replace_note'  => 'Mengupload foto baru akan menggantikan semua foto lama.',
+    'select_parent_category' => 'Pilih Kategori Induk',
+    'select_subcategory'     => 'Pilih Sub-kategori',
+    'subcategory'            => 'Sub-kategori',
+    'loading'                => 'Memuat...',
+    'no_subcategory_alert'   => 'Kategori ini tidak memiliki sub-kategori.',
+    'error_alert'            => 'Terjadi kesalahan saat mengambil data.',
     
     // Buttons
     'submit_button'       => 'Kirim Titipan',

@@ -46,17 +46,23 @@
         </div>
 
         <div class="mb-3">
-            <label for="category_id" class="form-label">{{ __('front/submission.category') }}</label>
-            <select class="form-select" id="category_id" name="category_id" required>
-                <option value="" disabled {{ old('category_id', $submission->category_id ?? '') == '' ? 'selected' : '' }}>{{ __('front/submission.select_category') }}</option>
-                @forelse($categories as $category)
-                    <option value="{{ $category->id }}" {{ old('category_id', $submission->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                        {{-- PERBAIKAN: Gunakan fallbackName() untuk nama yang bisa diterjemahkan --}}
-                        {{ $category->fallbackName() }}
+            <label for="category_parent" class="form-label">{{ __('front/submission.category') }}</label>
+            <select class="form-select" id="category_parent" name="category_parent" required>
+                <option value="">{{ __('front/submission.select_parent_category') }}</option>
+                {{-- Menggunakan variabel $parentCategories dari controller --}}
+                @foreach($parentCategories as $parent)
+                    <option value="{{ $parent->id }}" {{ old('category_parent', $submission->category->parent_id ?? '') == $parent->id ? 'selected' : '' }}>
+                        {{ $parent->fallbackName() }}
                     </option>
-                @empty
-                    <option value="" disabled>{{ __('front/submission.no_categories') }}</option>
-                @endforelse
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Dropdown untuk Sub-kategori (awalnya tersembunyi) --}}
+        <div class="mb-3" id="subcategory_wrapper" style="display: none;">
+            <label for="category_id" class="form-label">{{ __('front/submission.subcategory') }}</label>
+            <select class="form-select" id="category_id" name="category_id" required>
+                {{-- Opsi akan diisi oleh JavaScript --}}
             </select>
         </div>
 
@@ -95,3 +101,96 @@
     </form>
 </div>
 @endsection
+
+@push('footer')
+<script>
+console.log('Subcategories script loaded');
+
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('DOM loaded');
+    
+    const parentCategorySelect = document.getElementById('category_parent');
+    const subCategorySelect = document.getElementById('category_id');
+    const subCategoryWrapper = document.getElementById('subcategory_wrapper');
+    
+    console.log('Elements found:', {
+        parent: !!parentCategorySelect,
+        sub: !!subCategorySelect, 
+        wrapper: !!subCategoryWrapper
+    });
+    
+    if (!parentCategorySelect || !subCategorySelect || !subCategoryWrapper) {
+        console.error('Required elements not found!');
+        return;
+    }
+
+    parentCategorySelect.addEventListener('change', function () {
+        const parentId = this.value;
+        console.log('Parent category changed to:', parentId);
+
+        subCategorySelect.innerHTML = '';
+        subCategoryWrapper.style.display = 'none';
+
+        if (!parentId) {
+            console.log('No parent selected');
+            return;
+        }
+        
+        console.log('Loading subcategories for parent:', parentId);
+        subCategorySelect.innerHTML = '<option value="" selected disabled>{{ __('front/submission.loading') }}</option>';
+        subCategoryWrapper.style.display = 'block';
+        
+        fetch('/api/subcategories/' + parentId)
+            .then(response => {
+                console.log('API Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Subcategories data:', data);
+                subCategorySelect.innerHTML = '<option value="" selected disabled>{{ __('front/submission.select_subcategory') }}</option>';
+
+                if (data.length > 0) {
+                    data.forEach(function (subcategory) {
+                        console.log('Adding subcategory:', subcategory);
+                        const option = new Option(subcategory.name, subcategory.id);
+                        subCategorySelect.appendChild(option);
+                    });
+                    subCategoryWrapper.style.display = 'block';
+                    console.log('Subcategories loaded successfully');
+                } else {
+                    subCategoryWrapper.style.display = 'none';
+                    console.log('No subcategories found');
+                    alert('{{ __('front/submission.no_subcategory_alert') }}');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching subcategories:', error);
+                subCategoryWrapper.style.display = 'none';
+                alert('{{ __('front/submission.error_alert') }}');
+            });
+    });
+    
+    // Load subcategories on page load if parent category is already selected
+    const oldParentCategory = "{{ old('category_parent', $submission->category->parent_id ?? '') }}";
+    const oldCategoryId = "{{ old('category_id', $submission->category_id ?? '') }}";
+    
+    if (oldParentCategory) {
+        console.log('Loading subcategories for old parent:', oldParentCategory);
+        parentCategorySelect.value = oldParentCategory;
+        parentCategorySelect.dispatchEvent(new Event('change'));
+        
+        // Set selected subcategory after a short delay
+        setTimeout(function() {
+            if (oldCategoryId) {
+                subCategorySelect.value = oldCategoryId;
+            }
+        }, 500);
+    }
+    
+    console.log('Script setup complete');
+});
+</script>
+@endpush

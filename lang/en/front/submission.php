@@ -25,6 +25,12 @@ return [
     'product_photos'      => 'Product Photos (Max 3 photos)',
     'current_photos'      => 'Current photos:',
     'photo_replace_note'  => 'Uploading new photos will replace all old photos.',
+    'select_parent_category' => 'Select Parent Category',
+    'select_subcategory'     => 'Select Sub-category',
+    'subcategory'            => 'Sub-category',
+    'loading'                => 'Loading...',
+    'no_subcategory_alert'   => 'This category has no sub-categories.',
+    'error_alert'            => 'An error occurred while fetching data.',
     
     // Buttons
     'submit_button'       => 'Submit Consignment',

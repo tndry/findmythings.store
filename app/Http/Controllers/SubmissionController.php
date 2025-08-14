@@ -3,193 +3,214 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use InnoShop\Front\FrontServiceProvider;
-use InnoShop\Front\Middleware\GlobalFrontData;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Submission; 
-use InnoShop\Common\Repositories\CategoryRepo;
 use Illuminate\Support\Facades\Auth;
-use InnoShop\Common\Models\Product;
-
-
+use App\Models\Submission;
 
 class SubmissionController extends Controller
 {
-    /**
-     * Menampilkan halaman formulir titip jual.
-     */
-    public function create()
-{
-    $paginator = \InnoShop\Common\Repositories\CategoryRepo::getInstance()->list(['active' => true]);
-    $categories = $paginator->items();
-    
-
-    return view('submission.create', [
-        'categories' => $categories
-    ]);
-}
-    /**
-     * Menyimpan data dari formulir.
-     * (Logika ini akan kita isi nanti)
-     * 
-     * 
-     */
-// Versi final dan sudah benar
-public function store(Request $request)
-{
-    // 1. Validasi Data
-    $validator = Validator::make($request->all(), [
-        'product_name' => 'required|string|max:191',
-        'description' => 'required|string',
-        'category_id' => 'required|integer',
-        'price' => 'required|numeric|min:0',
-        'submitter_whatsapp' => 'required|string|max:20', // <-- PERBAIKAN: Menambahkan validasi WA
-        'images' => 'required|array|max:3',
-        'images.*' => 'image|mimes:jpeg,png,jpg|max:4096', // 4MB per foto
-    ]);
-
-    if ($validator->fails()) {
-        return back()->withErrors($validator)->withInput();
-    }
-
-    $customer = auth('customer')->user();
-    if (!$customer) {
-        return redirect()->route('login.index')->with('error', 'Anda harus login untuk menitipkan barang.');
-    }
-    
-    $imagePaths = [];
-
-    // 2. Proses Upload Foto
-    if ($request->hasFile('images')) {
-        foreach ($request->file('images') as $file) {
-            // Menyimpan file ke storage/app/public/submissions dan mendapatkan path-nya
-            $path = $file->store('submissions', 'public');
-            $imagePaths[] = $path;
-        }
-    }
-
-    // 3. Simpan ke Database
-    \App\Models\Submission::create([
-        'user_id'              => $customer->id,
-        'submitter_whatsapp'   => $request->input('submitter_whatsapp'),
-        'product_name'         => $request->input('product_name'),
-        'description'          => $request->input('description'),
-        'price'                => $request->input('price'),
-        'category_id'          => $request->input('category_id'),
-        'images'               => json_encode($imagePaths), // Menyimpan path gambar sebagai JSON
-        'status'               => 'pending',
-    ]);
-
-    return redirect()->back()->with('success', 'Barang Anda telah berhasil dikirim dan akan direview oleh Admin!');
-}
-
-public function userIndex(Request $request)
+    public function userIndex(Request $request)
     {
-        // Daftar status yang akan kita gunakan sebagai Tab
-        $filter_statuses = ['pending', 'revision_needed', 'approved', 'rejected'];
-
-        // Ambil input dari URL untuk filter status dan pencarian
-        $status_filter = $request->query('status');
-        $search_query = $request->query('search');
-
-        // Query dasar untuk mengambil submission milik user yang login
-        $query = Submission::where('user_id', Auth::id());
-
-        // Terapkan filter jika ada
-        if ($status_filter) {
-            $query->where('status', $status_filter);
+        $customer = auth('customer')->user();
+        if (!$customer) {
+            return redirect(front_route('login.index'))->with('error', 'Anda harus login untuk melihat submission.');
         }
 
-        // Terapkan pencarian jika ada
-        if ($search_query) {
-            $query->where('product_name', 'like', '%' . $search_query . '%');
+        $query = Submission::where('user_id', $customer->id);
+
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('status', $request->status);
         }
 
-        // Ambil data, urutkan dari yang terbaru, dan paginasi
-        $submissions = $query->latest()->paginate(10);
+        $submissions = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        // Kirim semua data yang dibutuhkan ke view
+        // Definisikan filter statuses untuk dropdown di view (hanya key status)
+        $filter_statuses = ['pending', 'approved', 'rejected', 'revision_needed', 'sold'];
+
         return view('submissions.user_index', compact('submissions', 'filter_statuses'));
     }
 
     public function edit(Submission $submission)
     {
-        // Keamanan: Pastikan hanya pemilik yang bisa mengedit
         if ($submission->user_id !== Auth::id()) {
-            abort(403, 'AKSES DITOLAK');
+            return redirect('/id/account/titipan')->with('error', 'Anda tidak memiliki akses untuk mengedit submission ini.');
         }
 
-        // Ambil data kategori untuk dropdown
-        $paginator = \InnoShop\Common\Repositories\CategoryRepo::getInstance()->list(['active' => true]);
-        $categories = $paginator->items();
-        
+        if ($submission->status !== 'revision_needed') {
+            return redirect('/id/account/titipan')->with('error', 'Submission hanya bisa diedit jika status "Perlu Revisi". Untuk submission yang disetujui, silakan hubungi admin jika ada masalah.');
+        }
 
+        $categories = \InnoShop\Common\Repositories\CategoryRepo::getInstance()->all(['active' => true]);
         
+        $parentCategories = $categories->filter(function($category) {
+            return $category->parent_id == 0 || is_null($category->parent_id);
+        });
 
-        // Tampilkan view create, tapi kirim data submission yang ada
-        return view('submission.create', compact('submission', 'categories'));
+        return view('submission.create', [
+            'submission' => $submission,
+            'categories' => $categories,
+            'parentCategories' => $parentCategories
+        ]);
     }
 
     public function update(Request $request, Submission $submission)
     {
-        // Keamanan: Pastikan hanya pemilik yang bisa mengupdate
         if ($submission->user_id !== Auth::id()) {
-            abort(403, 'AKSES DITOLAK');
+            return redirect('/id/account/titipan')->with('error', 'Anda tidak memiliki akses untuk mengedit submission ini.');
         }
 
-        // Validasi data (sama seperti saat membuat baru)
-        $request->validate([
+        if ($submission->status !== 'revision_needed') {
+            return redirect('/id/account/titipan')->with('error', 'Submission hanya bisa diedit jika status "Perlu Revisi".');
+        }
+
+        $validator = Validator::make($request->all(), [
             'product_name' => 'required|string|max:191',
-            'description' => 'required|string',
-            'category_id' => 'required|integer',
+            'category_id' => 'required|integer|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'submitter_whatsapp' => 'required|string|max:20',
-            'images' => 'nullable|array|max:3', // Gambar boleh dikosongkan jika tidak ingin diubah
+            'description' => 'required|string|max:1000',
+            'images' => 'nullable|array|max:3',
             'images.*' => 'image|mimes:jpeg,png,jpg|max:4096',
         ]);
 
-        // Kumpulkan data untuk diupdate
-        $updateData = $request->only(['product_name', 'description', 'category_id', 'price', 'submitter_whatsapp']);
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
 
-        // Proses gambar jika ada yang diupload ulang
+        $imagePaths = [];
+
         if ($request->hasFile('images')) {
-            // (Untuk saat ini kita hapus gambar lama dan ganti baru, bisa disempurnakan nanti)
-            $imagePaths = [];
-            foreach ($request->file('images') as $file) {
-                $path = $file->store('submissions', 'public');
-                $imagePaths[] = $path;
+            $uploadedFiles = $request->file('images');
+            
+            $maxFiles = min(count($uploadedFiles), 3);
+            
+            for ($i = 0; $i < $maxFiles; $i++) {
+                $file = $uploadedFiles[$i];
+                
+                if ($file->isValid() && $file->getSize() <= 4 * 1024 * 1024) {
+                    $path = $file->store('submissions', 'public');
+                    $imagePaths[] = $path;
+                }
             }
-            $updateData['images'] = json_encode($imagePaths);
+        } else {
+            $imagePaths = json_decode($submission->images, true) ?? [];
+        }
+
+        $attributes = [];
+        if ($request->filled('kondisi')) {
+            $attributes['kondisi'] = $request->kondisi;
+        }
+
+        $submission->update([
+            'product_name'         => $request->product_name,
+            'category_id'          => $request->category_id,
+            'price'                => $request->price,
+            'submitter_whatsapp'   => $request->submitter_whatsapp,
+            'description'          => $request->description,
+            'attributes'           => !empty($attributes) ? json_encode($attributes) : null,
+            'images'               => !empty($imagePaths) ? json_encode($imagePaths) : null,
+            'status'               => 'pending',
+        ]);
+
+        return redirect('/id/account/titipan')->with('success', __('front/submission.update_success'));
+    }
+
+    public function create()
+    {
+        $parentCategories = \InnoShop\Common\Models\Category::where(function ($query){
+            $query->whereNull('parent_id')->orWhere('parent_id', 0);
+        })->where('active', true)->get();
+
+        return view('submission.create', [
+            'parentCategories'=> $parentCategories,
+        ]);
+    }
+
+    public function getSubcategories(\InnoShop\Common\Models\Category $category)
+    {
+        $subcategories = $category->children()->where('active', true)->get();
+        
+        // Transform the data to include proper name for frontend
+        $transformedSubcategories = $subcategories->map(function($subcategory) {
+            return [
+                'id' => $subcategory->id,
+                'name' => $subcategory->fallbackName(),
+            ];
+        });
+        
+        return response()->json($transformedSubcategories);
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_name' => 'required|string|max:191',
+            'category_id' => 'required|integer|exists:categories,id',
+            'price' => 'required|numeric|min:0',
+            'submitter_whatsapp' => 'required|string|max:20',
+            'description' => 'required|string|max:1000',
+            'images' => 'nullable|array|max:3',
+            'images.*' => 'image|mimes:jpeg,png,jpg|max:4096',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $customer = auth('customer')->user();
+        if (!$customer) {
+            return redirect(front_route('login.index'))->with('error', 'Anda harus login untuk menitipkan barang.');
         }
         
-        // PENTING: Ubah status kembali menjadi 'Menunggu Persetujuan'
-        $updateData['status'] = 'pending';
-        $updateData['admin_notes'] = null; // Hapus catatan admin setelah direvisi
+        $imagePaths = [];
 
-        // Update data di database
-        $submission->update($updateData);
+        if ($request->hasFile('images')) {
+            $uploadedFiles = $request->file('images');
+            
+            $maxFiles = min(count($uploadedFiles), 3);
+            
+            for ($i = 0; $i < $maxFiles; $i++) {
+                $file = $uploadedFiles[$i];
+                
+                if ($file->isValid() && $file->getSize() <= 4 * 1024 * 1024) {
+                    $path = $file->store('submissions', 'public');
+                    $imagePaths[] = $path;
+                }
+            }
+        }
 
-        return redirect(account_route('submissions.index'))->with('success', 'Titipan Anda berhasil diperbarui dan akan direview kembali oleh Admin.');
+        $attributes = [];
+        if ($request->filled('kondisi')) {
+            $attributes['kondisi'] = $request->kondisi;
+        }
+
+        $submission = Submission::create([
+            'product_name'         => $request->product_name,
+            'category_id'          => $request->category_id,
+            'price'                => $request->price,
+            'submitter_whatsapp'   => $request->submitter_whatsapp,
+            'description'          => $request->description,
+            'attributes'           => !empty($attributes) ? json_encode($attributes) : null,
+            'images'               => !empty($imagePaths) ? json_encode($imagePaths) : null,
+            'status'               => 'pending',
+            'user_id'              => $customer->id,
+        ]);
+
+        return redirect()->back()->with('success', 'Submission berhasil dikirim! Kami akan meninjau pengajuan Anda dalam 1-2 hari kerja.');
     }
 
     public function markAsSold(Submission $submission)
     {
-        // Keamanan: Pastikan hanya pemilik yang bisa mengubah status
         if ($submission->user_id !== Auth::id()) {
-            abort(403, 'AKSES DITOLAK');
+            return redirect('/id/account/titipan')->with('error', 'Anda tidak memiliki akses untuk mengubah submission ini.');
         }
 
-        // 1. Ubah status submission
-        $submission->status = 'sold';
-        $submission->save();
+        $submission->update(['status' => 'sold']);
 
-        // 2. Cari produk yang terhubung dan nonaktifkan
-        $product = Product::where('submission_id', $submission->id)->first();
-        if ($product) {
-            $product->active = 0; // Menonaktifkan produk
-            $product->save();
+        if ($submission->product) {
+            $submission->product->update(['active' => 0]);
         }
 
-        return redirect(account_route('submissions.index'))->with('success', 'Produk telah ditandai sebagai terjual.');
+        return redirect('/id/account/titipan')->with('success', 'Produk berhasil ditandai sebagai terjual dan tidak lagi tampil di toko.');
     }
 }

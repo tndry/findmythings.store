@@ -47,16 +47,14 @@ class SubmissionController extends Controller
     {
         // PENCEGAHAN DUPLIKASI: Cek apakah submission sudah diapprove atau sudah ada produk
         if ($submission->status === 'approved') {
-            return redirect()
-                ->route('panel.submissions.index')
+            return redirect(panel_route('submissions.index'))
                 ->withErrors(['error' => 'Submission ini sudah disetujui sebelumnya.']);
         }
 
         // Cek apakah sudah ada produk yang dibuat untuk submission ini
         $existingProduct = Product::where('submission_id', $submission->id)->first();
         if ($existingProduct) {
-            return redirect()
-                ->route('panel.submissions.index')
+            return redirect(panel_route('submissions.index'))
                 ->withErrors(['error' => 'Produk untuk submission ini sudah pernah dibuat (ID: ' . $existingProduct->id . ').']);
         }
 
@@ -154,8 +152,7 @@ class SubmissionController extends Controller
                 DB::commit();
 
                 \Log::info("Approval process completed successfully for submission {$submission->id}");
-                return redirect()
-                    ->route('panel.submissions.index')
+                return redirect(panel_route('submissions.index'))
                     ->with('success', 'Produk berhasil disetujui dan diterbitkan!');
             } catch (\Exception $e) {
                 \Log::error("Approval process failed for submission {$submission->id}: " . $e->getMessage());
@@ -182,7 +179,7 @@ class SubmissionController extends Controller
         //  Kirim email 
         Mail::to($submission->user->email)->send(new SubmissionStatusUpdate($submission));
 
-        return redirect()->route('panel.submissions.index')->with('success', 'Submission telah ditolak.');
+        return redirect(panel_route('submissions.index'))->with('success', 'Submission telah ditolak.');
     }
 
 /**
@@ -205,6 +202,6 @@ class SubmissionController extends Controller
         // Kirim email 
         Mail::to($submission->user->email)->send(new SubmissionStatusUpdate($submission));
 
-        return redirect()->route('panel.submissions.index')->with('success', 'Permintaan revisi telah dikirimkan ke pengguna.');
+        return redirect(panel_route('submissions.index'))->with('success', 'Permintaan revisi telah dikirimkan ke pengguna.');
     }   
 }
