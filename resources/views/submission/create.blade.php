@@ -83,13 +83,36 @@
 
         <div class="mb-3">
             <label for="images" class="form-label">{{ __('front/submission.product_photos') }}</label>
-            <input class="form-control" type="file" id="images" name="images[]" multiple>
+            <input class="form-control" type="file" id="images" name="images[]" multiple accept="image/jpeg,image/png,image/jpg">
+            <small class="form-text text-muted">{{ __('front/submission.photo_upload_hint') }}</small>
+            
+            {{-- Preview Container --}}
+            <div id="image-preview-container" class="mt-3" style="display: none;">
+                <label class="form-label">{{ __('front/submission.photo_preview') }}</label>
+                <div id="image-preview-grid" class="row g-2">
+                    <!-- Previews will be inserted here -->
+                </div>
+                <small class="form-text text-muted text-info">
+                    <i class="fas fa-info-circle"></i> {{ __('front/submission.drag_drop_hint') }}
+                </small>
+            </div>
+            
             @if(isset($submission) && $submission->images)
                 <div class="mt-2">
-                    <small>{{ __('front/submission.current_photos') }}</small>
-                    <div class="d-flex">
-                        @foreach(json_decode($submission->images) as $image)
-                            <img src="{{ asset('storage/' . $image) }}" alt="Foto produk" class="img-thumbnail me-2" style="width: 100px; height: 100px; object-fit: cover;">
+                    <label class="form-label">{{ __('front/submission.current_photos') }}</label>
+                    <div id="existing-images-grid" class="row g-2">
+                        @foreach(json_decode($submission->images) as $index => $image)
+                            <div class="col-md-4 existing-image-item" data-index="{{ $index }}">
+                                <div class="position-relative">
+                                    <img src="{{ asset('storage/' . $image) }}" alt="Foto produk" class="img-thumbnail w-100" style="height: 150px; object-fit: cover;">
+                                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 remove-existing-btn" data-index="{{ $index }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <div class="position-absolute bottom-0 start-0 bg-dark bg-opacity-75 text-white px-2 py-1 small">
+                                        {{ $index + 1 }}
+                                    </div>
+                                </div>
+                            </div>
                         @endforeach
                     </div>
                     <small class="text-muted">{{ __('front/submission.photo_replace_note') }}</small>
@@ -103,12 +126,103 @@
 @endsection
 
 @push('footer')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* Image Preview Styles */
+.image-preview-item {
+    position: relative;
+    cursor: move;
+    transition: transform 0.2s ease;
+}
+
+.image-preview-item:hover {
+    transform: scale(1.02);
+}
+
+.image-preview-item.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.image-preview-item .remove-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.image-preview-item:hover .remove-btn {
+    opacity: 1;
+}
+
+.drag-over {
+    border: 2px dashed #007bff !important;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.image-order-number {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.preview-image {
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Drag placeholder */
+.drag-placeholder {
+    border: 2px dashed #ccc;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+/* File input enhancement */
+#images {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#images:hover {
+    border-color: #007bff;
+    background-color: rgba(0, 123, 255, 0.05);
+}
+</style>
+
 <script>
 console.log('Subcategories script loaded');
+
+// Global variables for image handling
+let selectedFiles = [];
+let existingImages = [];
 
 document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM loaded');
     
+    // Initialize subcategories functionality
+    initSubcategoriesFeature();
+    
+    // Initialize image preview functionality
+    initImagePreviewFeature();
+});
+
+function initSubcategoriesFeature() {
     const parentCategorySelect = document.getElementById('category_parent');
     const subCategorySelect = document.getElementById('category_id');
     const subCategoryWrapper = document.getElementById('subcategory_wrapper');
@@ -190,7 +304,168 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 500);
     }
     
-    console.log('Script setup complete');
-});
+    console.log('Subcategories setup complete');
+}
+
+function initImagePreviewFeature() {
+    const fileInput = document.getElementById('images');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewGrid = document.getElementById('image-preview-grid');
+    
+    if (!fileInput || !previewContainer || !previewGrid) {
+        console.error('Image preview elements not found');
+        return;
+    }
+    
+    // Handle file selection
+    fileInput.addEventListener('change', function(e) {
+        handleFileSelection(e.target.files);
+    });
+    
+    // Initialize existing images for editing
+    initExistingImages();
+    
+    console.log('Image preview feature initialized');
+}
+
+function handleFileSelection(files) {
+    const maxFiles = 3;
+    selectedFiles = Array.from(files).slice(0, maxFiles);
+    
+    if (files.length > maxFiles) {
+        alert(`Maksimal ${maxFiles} gambar. ${files.length - maxFiles} gambar terakhir tidak akan digunakan.`);
+    }
+    
+    displayImagePreviews();
+}
+
+function displayImagePreviews() {
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewGrid = document.getElementById('image-preview-grid');
+    
+    if (selectedFiles.length === 0) {
+        previewContainer.style.display = 'none';
+        return;
+    }
+    
+    previewContainer.style.display = 'block';
+    previewGrid.innerHTML = '';
+    
+    selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageItem = createImagePreviewItem(e.target.result, index, file.name, false);
+            previewGrid.appendChild(imageItem);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function createImagePreviewItem(src, index, fileName, isExisting) {
+    const colDiv = document.createElement('div');
+    colDiv.className = 'col-md-4 image-preview-item';
+    colDiv.draggable = true;
+    colDiv.dataset.index = index;
+    colDiv.dataset.existing = isExisting;
+    
+    colDiv.innerHTML = `
+        <div class="position-relative">
+            <img src="${src}" alt="${fileName}" class="img-thumbnail w-100 preview-image">
+            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 remove-btn">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="position-absolute bottom-0 start-0 m-2">
+                <span class="image-order-number">${index + 1}</span>
+            </div>
+            <div class="position-absolute bottom-0 end-0 bg-dark bg-opacity-75 text-white px-2 py-1 small">
+                ${fileName.length > 15 ? fileName.substring(0, 15) + '...' : fileName}
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners
+    setupDragAndDrop(colDiv);
+    setupRemoveButton(colDiv);
+    
+    return colDiv;
+}
+
+function setupDragAndDrop(element) {
+    element.addEventListener('dragstart', function(e) {
+        e.dataTransfer.setData('text/plain', this.dataset.index);
+        this.classList.add('dragging');
+    });
+    
+    element.addEventListener('dragend', function(e) {
+        this.classList.remove('dragging');
+    });
+    
+    element.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+    });
+    
+    element.addEventListener('dragleave', function(e) {
+        this.classList.remove('drag-over');
+    });
+    
+    element.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        
+        const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        const targetIndex = parseInt(this.dataset.index);
+        
+        if (draggedIndex !== targetIndex) {
+            reorderImages(draggedIndex, targetIndex);
+        }
+    });
+}
+
+function setupRemoveButton(element) {
+    const removeBtn = element.querySelector('.remove-btn');
+    removeBtn.addEventListener('click', function() {
+        const index = parseInt(element.dataset.index);
+        removeImage(index);
+    });
+}
+
+function reorderImages(fromIndex, toIndex) {
+    // Move the file in the selectedFiles array
+    const movedFile = selectedFiles.splice(fromIndex, 1)[0];
+    selectedFiles.splice(toIndex, 0, movedFile);
+    
+    // Refresh the display
+    displayImagePreviews();
+    updateFileInput();
+}
+
+function removeImage(index) {
+    selectedFiles.splice(index, 1);
+    displayImagePreviews();
+    updateFileInput();
+}
+
+function updateFileInput() {
+    const fileInput = document.getElementById('images');
+    const dt = new DataTransfer();
+    
+    selectedFiles.forEach(file => {
+        dt.items.add(file);
+    });
+    
+    fileInput.files = dt.files;
+}
+
+function initExistingImages() {
+    // Handle remove existing images
+    document.querySelectorAll('.remove-existing-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = this.dataset.index;
+            this.closest('.existing-image-item').remove();
+            // You might want to add logic to track removed images for backend processing
+        });
+    });
+}
 </script>
 @endpush
